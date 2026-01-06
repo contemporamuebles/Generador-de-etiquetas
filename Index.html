@@ -226,102 +226,6 @@
             color: #444;
         }
 
-        .preview-container {
-            border: 1px solid #eee;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 6px;
-            background-color: white;
-        }
-
-        .label-preview {
-            display: inline-block;
-            margin: 5px;
-            vertical-align: top;
-            page-break-inside: avoid;
-            background-color: white;
-        }
-
-        .stone-label {
-            width: 1.31cm;
-            height: 7.43cm;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px;
-            transform: rotate(-90deg);
-            transform-origin: center;
-            position: relative;
-            left: -2.5cm;
-        }
-
-        .stone-label-content {
-            transform: rotate(90deg);
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .furniture-label {
-            width: 20.32cm;
-            height: 12.865cm;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: flex-start;
-            padding: 0.5cm;
-            border-bottom: 1px dashed #ccc;
-            position: relative;
-        }
-
-        .barcode-container {
-            text-align: center;
-            margin: 0.3cm 0;
-        }
-
-        .label-name {
-            font-weight: bold;
-            text-align: left;
-            word-break: break-word;
-            width: 100%;
-            margin-bottom: 0.5cm;
-            font-weight: 700;
-        }
-
-        .label-clave {
-            font-size: 16px;
-            margin: 0.2cm 0;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .label-pieces {
-            font-size: 14px;
-            color: #666;
-            position: absolute;
-            right: 0.5cm;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: 600;
-        }
-
-        .asterisk {
-            color: red;
-            font-weight: bold;
-            font-size: 20px;
-            position: absolute;
-            top: 0.5cm;
-            left: 0.5cm;
-        }
-
-        .label-with-asterisk {
-            position: relative;
-        }
-
         .controls {
             display: flex;
             justify-content: space-between;
@@ -355,54 +259,6 @@
             font-weight: 700;
         }
 
-        .data-content {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .stone-barcode-container {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .stone-barcode-svg {
-            transform: rotate(90deg);
-            margin: 10px 0;
-        }
-
-        .stone-name {
-            font-weight: bold;
-            text-align: center;
-            word-break: break-word;
-            width: 100%;
-            margin-top: 10px;
-            font-weight: 700;
-        }
-
-        .stone-clave-text {
-            font-size: 9px;
-            margin-top: 5px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            .print-section, .print-section * {
-                visibility: visible;
-            }
-            .print-section {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-        }
-
         @media (max-width: 768px) {
             .button-group {
                 flex-direction: column;
@@ -422,10 +278,6 @@
             .controls button {
                 width: 100%;
                 max-width: 300px;
-            }
-            
-            .stone-label {
-                left: -1.5cm;
             }
         }
     </style>
@@ -499,11 +351,6 @@
                 <button id="addStoneRow" class="btn-success">+ Agregar Fila</button>
                 <button id="generateStoneLabels" class="btn-primary">Generar Etiquetas</button>
                 <button id="backFromStone" class="btn-secondary">← Volver al Inicio</button>
-            </div>
-            
-            <div id="stonePreview" class="preview-container hidden">
-                <h3>👁️ Vista Previa de Etiquetas</h3>
-                <div id="stonePreviewContainer"></div>
             </div>
         </div>
         
@@ -592,11 +439,6 @@
                 <button id="generateFurnitureWithKeyMultiple" class="btn-primary">Generar Etiquetas</button>
                 <button id="backFromFurnitureWithKeyMultiple" class="btn-secondary">← Volver</button>
             </div>
-            
-            <div id="furnitureWithKeyMultiplePreview" class="preview-container hidden">
-                <h3>👁️ Vista Previa de Etiquetas</h3>
-                <div id="furnitureWithKeyMultiplePreviewContainer"></div>
-            </div>
         </div>
         
         <!-- Pantalla para muebles con clave y una pieza -->
@@ -647,11 +489,6 @@
                 <button id="addFurnitureWithKeySingleRow" class="btn-success">+ Agregar Fila</button>
                 <button id="generateFurnitureWithKeySingle" class="btn-primary">Generar Etiquetas</button>
                 <button id="backFromFurnitureWithKeySingle" class="btn-secondary">← Volver</button>
-            </div>
-            
-            <div id="furnitureWithKeySinglePreview" class="preview-container hidden">
-                <h3>👁️ Vista Previa de Etiquetas</h3>
-                <div id="furnitureWithKeySinglePreviewContainer"></div>
             </div>
         </div>
         
@@ -704,11 +541,6 @@
                 <button id="generateFurnitureWithoutKeyMultiple" class="btn-warning">Generar Etiquetas</button>
                 <button id="backFromFurnitureWithoutKeyMultiple" class="btn-secondary">← Volver</button>
             </div>
-            
-            <div id="furnitureWithoutKeyMultiplePreview" class="preview-container hidden">
-                <h3>👁️ Vista Previa de Etiquetas</h3>
-                <div id="furnitureWithoutKeyMultiplePreviewContainer"></div>
-            </div>
         </div>
         
         <!-- Pantalla para muebles sin clave y una pieza -->
@@ -757,11 +589,6 @@
                 <button id="addFurnitureWithoutKeySingleRow" class="btn-success">+ Agregar Fila</button>
                 <button id="generateFurnitureWithoutKeySingle" class="btn-warning">Generar Etiquetas</button>
                 <button id="backFromFurnitureWithoutKeySingle" class="btn-secondary">← Volver</button>
-            </div>
-            
-            <div id="furnitureWithoutKeySinglePreview" class="preview-container hidden">
-                <h3>👁️ Vista Previa de Etiquetas</h3>
-                <div id="furnitureWithoutKeySinglePreviewContainer"></div>
             </div>
         </div>
     </div>
@@ -894,12 +721,6 @@
             
             screens.forEach(screenId => {
                 document.getElementById(screenId).classList.add('hidden');
-            });
-            
-            // Ocultar todas las vistas previas
-            const previews = document.querySelectorAll('.preview-container');
-            previews.forEach(preview => {
-                preview.classList.add('hidden');
             });
         }
         
@@ -1227,42 +1048,7 @@
                 return;
             }
             
-            showStonePreview(labels);
             generateStonePDF(labels);
-        }
-        
-        function showStonePreview(labels) {
-            const container = document.getElementById('stonePreviewContainer');
-            container.innerHTML = '';
-            
-            labels.forEach((label, index) => {
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'label-preview stone-label';
-                
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'stone-label-content';
-                contentDiv.innerHTML = `
-                    <div class="stone-barcode-container">
-                        <svg class="stone-barcode"></svg>
-                        <div class="stone-clave-text"><strong>${label.clave}</strong></div>
-                    </div>
-                    <div class="stone-name"><strong>${label.nombre}</strong></div>
-                `;
-                labelDiv.appendChild(contentDiv);
-                container.appendChild(labelDiv);
-                
-                setTimeout(() => {
-                    JsBarcode(`.stone-barcode:eq(${index})`, `*${label.clave}*`, {
-                        format: "CODE128",
-                        lineColor: "#000",
-                        width: 0.5,
-                        height: 20,
-                        displayValue: false
-                    });
-                }, 100);
-            });
-            
-            document.getElementById('stonePreview').classList.remove('hidden');
         }
         
         function generateStonePDF(labels) {
@@ -1295,7 +1081,6 @@
             let labelIndex = 0;
             
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
             
             for (let row = 0; row < labelsPerColumn; row++) {
                 for (let col = 0; col < labelsPerRow; col++) {
@@ -1303,61 +1088,49 @@
                     
                     const label = labels[labelIndex];
                     
-                    // Dibujar borde punteado
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.01);
-                    
-                    const dashLength = 0.1;
-                    const gapLength = 0.1;
-                    
-                    drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                    drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
-                    
                     // Guardar estado actual
                     doc.saveGraphicsState();
                     
-                    // Rotar el contenido 90 grados
-                    doc.rotate(90, currentX + labelWidth/2, currentY + labelHeight/2);
+                    // Trasladar el origen al centro de la etiqueta y rotar 90 grados
+                    doc.translate(currentX + labelWidth/2, currentY + labelHeight/2);
+                    doc.rotate(-90 * Math.PI / 180);
                     
-                    // Calcular posición rotada
-                    const rotatedX = currentY + labelHeight/2 - labelWidth/2;
-                    const rotatedY = -(currentX + labelWidth/2 - labelHeight/2);
+                    // Ahora trabajamos en coordenadas rotadas
+                    const rotatedWidth = labelHeight;
+                    const rotatedHeight = labelWidth;
                     
-                    // Agregar código de barras (texto)
-                    const barcodeText = `*${label.clave}*`;
+                    // Dividir el espacio verticalmente
+                    const sectionHeight = rotatedHeight / 3;
+                    
+                    // 1. Código de barras (parte superior)
+                    const barcodeY = -rotatedHeight/2 + sectionHeight * 0.5;
                     doc.setFontSize(6);
-                    doc.text(barcodeText, rotatedX + 0.2, rotatedY - 0.5);
+                    doc.text(`*${label.clave}*`, 0, barcodeY, { align: 'center' });
                     
-                    // Agregar clave
-                    doc.setFontSize(6);
-                    doc.text(label.clave, rotatedX + 0.2, rotatedY + 0.2);
-                    
-                    // Agregar nombre
-                    doc.setFontSize(6);
+                    // 2. Clave (parte central)
+                    const claveY = -rotatedHeight/2 + sectionHeight * 1.5;
+                    doc.setFontSize(8);
                     doc.setFont(undefined, 'bold');
+                    doc.text(label.clave, 0, claveY, { align: 'center' });
                     
-                    // Calcular tamaño de fuente automático para el nombre
-                    const maxNameWidth = labelHeight - 1;
-                    const maxNameHeight = labelWidth - 1;
-                    let fontSize = 6;
-                    let textWidth;
-                    
-                    do {
-                        doc.setFontSize(fontSize);
-                        textWidth = doc.getTextWidth(label.nombre);
-                        if (textWidth > maxNameWidth && fontSize > 4) {
-                            fontSize -= 0.5;
-                        } else {
-                            break;
-                        }
-                    } while (textWidth > maxNameWidth && fontSize > 4);
-                    
-                    doc.text(label.nombre, rotatedX + 0.2, rotatedY + 1.0, { maxWidth: maxNameWidth });
+                    // 3. Nombre (parte inferior)
+                    const nameY = -rotatedHeight/2 + sectionHeight * 2.5;
+                    doc.setFontSize(7);
+                    doc.text(label.nombre, 0, nameY, { 
+                        align: 'center', 
+                        maxWidth: rotatedWidth - 0.2 
+                    });
                     
                     // Restaurar estado
                     doc.restoreGraphicsState();
+                    
+                    // Dibujar bordes punteados
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.01);
+                    const dashPattern = [0.1, 0.1];
+                    doc.setLineDashPattern(dashPattern, 0);
+                    doc.rect(currentX, currentY, labelWidth, labelHeight, 'S');
+                    doc.setLineDashPattern([], 0);
                     
                     currentX += labelWidth;
                     labelIndex++;
@@ -1369,6 +1142,7 @@
                 if (labelIndex >= labels.length) break;
             }
             
+            // Si hay más etiquetas, agregar nuevas páginas
             while (labelIndex < labels.length) {
                 doc.addPage();
                 currentX = marginLeft;
@@ -1380,51 +1154,38 @@
                         
                         const label = labels[labelIndex];
                         
-                        doc.setDrawColor(200, 200, 200);
-                        doc.setLineWidth(0.01);
-                        
-                        const dashLength = 0.1;
-                        const gapLength = 0.1;
-                        
-                        drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                        drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
-                        
                         doc.saveGraphicsState();
-                        doc.rotate(90, currentX + labelWidth/2, currentY + labelHeight/2);
+                        doc.translate(currentX + labelWidth/2, currentY + labelHeight/2);
+                        doc.rotate(-90 * Math.PI / 180);
                         
-                        const rotatedX = currentY + labelHeight/2 - labelWidth/2;
-                        const rotatedY = -(currentX + labelWidth/2 - labelHeight/2);
+                        const rotatedWidth = labelHeight;
+                        const rotatedHeight = labelWidth;
+                        const sectionHeight = rotatedHeight / 3;
                         
-                        const barcodeText = `*${label.clave}*`;
+                        const barcodeY = -rotatedHeight/2 + sectionHeight * 0.5;
                         doc.setFontSize(6);
-                        doc.text(barcodeText, rotatedX + 0.2, rotatedY - 0.5);
+                        doc.text(`*${label.clave}*`, 0, barcodeY, { align: 'center' });
                         
-                        doc.setFontSize(6);
-                        doc.text(label.clave, rotatedX + 0.2, rotatedY + 0.2);
-                        
-                        doc.setFontSize(6);
+                        const claveY = -rotatedHeight/2 + sectionHeight * 1.5;
+                        doc.setFontSize(8);
                         doc.setFont(undefined, 'bold');
+                        doc.text(label.clave, 0, claveY, { align: 'center' });
                         
-                        const maxNameWidth = labelHeight - 1;
-                        const maxNameHeight = labelWidth - 1;
-                        let fontSize = 6;
-                        let textWidth;
-                        
-                        do {
-                            doc.setFontSize(fontSize);
-                            textWidth = doc.getTextWidth(label.nombre);
-                            if (textWidth > maxNameWidth && fontSize > 4) {
-                                fontSize -= 0.5;
-                            } else {
-                                break;
-                            }
-                        } while (textWidth > maxNameWidth && fontSize > 4);
-                        
-                        doc.text(label.nombre, rotatedX + 0.2, rotatedY + 1.0, { maxWidth: maxNameWidth });
+                        const nameY = -rotatedHeight/2 + sectionHeight * 2.5;
+                        doc.setFontSize(7);
+                        doc.text(label.nombre, 0, nameY, { 
+                            align: 'center', 
+                            maxWidth: rotatedWidth - 0.2 
+                        });
                         
                         doc.restoreGraphicsState();
+                        
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setLineWidth(0.01);
+                        const dashPattern = [0.1, 0.1];
+                        doc.setLineDashPattern(dashPattern, 0);
+                        doc.rect(currentX, currentY, labelWidth, labelHeight, 'S');
+                        doc.setLineDashPattern([], 0);
                         
                         currentX += labelWidth;
                         labelIndex++;
@@ -1440,36 +1201,6 @@
             doc.save('etiquetas_placas_piedra.pdf');
         }
         
-        function drawDashedLine(doc, x1, y1, x2, y2, dashLength, gapLength) {
-            const isHorizontal = Math.abs(y2 - y1) < Math.abs(x2 - x1);
-            
-            if (isHorizontal) {
-                const length = x2 - x1;
-                const steps = Math.ceil(length / (dashLength + gapLength));
-                
-                for (let i = 0; i < steps; i++) {
-                    const start = x1 + i * (dashLength + gapLength);
-                    const end = Math.min(start + dashLength, x2);
-                    
-                    if (start < x2) {
-                        doc.line(start, y1, end, y1);
-                    }
-                }
-            } else {
-                const length = y2 - y1;
-                const steps = Math.ceil(length / (dashLength + gapLength));
-                
-                for (let i = 0; i < steps; i++) {
-                    const start = y1 + i * (dashLength + gapLength);
-                    const end = Math.min(start + dashLength, y2);
-                    
-                    if (start < y2) {
-                        doc.line(x1, start, x1, end);
-                    }
-                }
-            }
-        }
-        
         // Función para generar etiquetas de muebles
         function generateFurnitureLabels(type) {
             let labels = [];
@@ -1477,22 +1208,18 @@
             switch(type) {
                 case 'withKeyMultiple':
                     labels = getFurnitureWithKeyMultipleLabels();
-                    showFurniturePreview(labels, type);
                     generateFurniturePDF(labels, type);
                     break;
                 case 'withKeySingle':
                     labels = getFurnitureWithKeySingleLabels();
-                    showFurniturePreview(labels, type);
                     generateFurniturePDF(labels, type);
                     break;
                 case 'withoutKeyMultiple':
                     labels = getFurnitureWithoutKeyMultipleLabels();
-                    showFurniturePreview(labels, type);
                     generateFurniturePDF(labels, type);
                     break;
                 case 'withoutKeySingle':
                     labels = getFurnitureWithoutKeySingleLabels();
-                    showFurniturePreview(labels, type);
                     generateFurniturePDF(labels, type);
                     break;
             }
@@ -1602,71 +1329,6 @@
             return labels;
         }
         
-        function showFurniturePreview(labels, type) {
-            let containerId = '';
-            switch(type) {
-                case 'withKeyMultiple':
-                    containerId = 'furnitureWithKeyMultiplePreviewContainer';
-                    document.getElementById('furnitureWithKeyMultiplePreview').classList.remove('hidden');
-                    break;
-                case 'withKeySingle':
-                    containerId = 'furnitureWithKeySinglePreviewContainer';
-                    document.getElementById('furnitureWithKeySinglePreview').classList.remove('hidden');
-                    break;
-                case 'withoutKeyMultiple':
-                    containerId = 'furnitureWithoutKeyMultiplePreviewContainer';
-                    document.getElementById('furnitureWithoutKeyMultiplePreview').classList.remove('hidden');
-                    break;
-                case 'withoutKeySingle':
-                    containerId = 'furnitureWithoutKeySinglePreviewContainer';
-                    document.getElementById('furnitureWithoutKeySinglePreview').classList.remove('hidden');
-                    break;
-            }
-            
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            
-            labels.forEach((label, index) => {
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'label-preview furniture-label';
-                
-                let html = '';
-                
-                if (label.tieneAsterisco) {
-                    html += '<div class="asterisk">*</div>';
-                    labelDiv.classList.add('label-with-asterisk');
-                }
-                
-                html += `<div class="label-name"><strong>${label.nombre}</strong></div>`;
-                
-                if (label.tieneClave) {
-                    html += '<div class="barcode-container">';
-                    html += '<svg class="barcode"></svg>';
-                    html += `<div class="label-clave"><strong>${label.clave}</strong></div>`;
-                    html += '</div>';
-                }
-                
-                if (label.tienePiezas) {
-                    html += `<div class="label-pieces"><strong>${label.piezaActual} de ${label.totalPiezas}</strong></div>`;
-                }
-                
-                labelDiv.innerHTML = html;
-                container.appendChild(labelDiv);
-                
-                if (label.tieneClave) {
-                    setTimeout(() => {
-                        JsBarcode(`.barcode:eq(${index})`, `*${label.clave}*`, {
-                            format: "CODE128",
-                            lineColor: "#000",
-                            width: 1,
-                            height: 30,
-                            displayValue: false
-                        });
-                    }, 100);
-                }
-            });
-        }
-        
         function generateFurniturePDF(labels, type) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
@@ -1692,100 +1354,121 @@
             const labelWidth = availableWidth;
             const labelHeight = availableHeight / 2;
             
-            let currentY = marginTop;
+            // Porcentajes de la altura de la etiqueta para cada sección
+            const percentages = {
+                blanco: 18.24,
+                asterisco: 4.05,
+                piezas: 4.05,
+                barcode: 2.94,
+                clave: 0.95,
+                nombre: 69.78
+            };
+            
+            // Convertir porcentajes a alturas en cm
+            const sectionHeights = {};
+            for (const [key, value] of Object.entries(percentages)) {
+                sectionHeights[key] = (value / 100) * labelHeight;
+            }
+            
             let labelIndex = 0;
+            let pageIndex = 0;
             
             doc.setFont("helvetica", "normal");
             
             while (labelIndex < labels.length) {
-                // Verificar si necesitamos nueva página
+                // Verificar si necesitamos nueva página (2 etiquetas por página)
                 if (labelIndex > 0 && labelIndex % 2 === 0) {
                     doc.addPage();
-                    currentY = marginTop;
+                    pageIndex++;
                 }
                 
+                // Calcular la posición Y de la etiqueta actual
+                const labelY = marginTop + (labelIndex % 2) * labelHeight;
                 const label = labels[labelIndex];
                 
-                // Solo dibujar línea punteada en la mitad de la página (entre etiquetas)
-                if (labelIndex % 2 === 1) {
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.01);
-                    
-                    const dashLength = 0.2;
-                    const gapLength = 0.2;
-                    
-                    // Línea punteada horizontal en el medio
-                    const lineY = marginTop + labelHeight;
-                    drawDashedLine(doc, marginLeft, lineY, marginLeft + labelWidth, lineY, dashLength, gapLength);
+                // Determinar qué elementos tiene la etiqueta
+                const hasAsterisk = label.tieneAsterisco || false;
+                const hasPieces = label.tienePiezas || false;
+                const hasKey = label.tieneClave || false;
+                
+                // Ajustar alturas según los elementos que tenga
+                let nombreHeight = sectionHeights.nombre;
+                let currentY = labelY + sectionHeights.blanco / 2;
+                
+                // 1. Asterisco (si tiene)
+                if (hasAsterisk) {
+                    const asteriscoY = currentY + sectionHeights.asterisco / 2;
+                    doc.setFontSize(14);
+                    doc.setTextColor(255, 0, 0);
+                    doc.text('*', marginLeft + labelWidth / 2, asteriscoY, { align: 'center' });
+                    doc.setTextColor(0, 0, 0);
+                    currentY += sectionHeights.asterisco;
+                } else {
+                    nombreHeight += sectionHeights.asterisco;
                 }
                 
-                // Posición actual para esta etiqueta
-                const currentX = marginLeft;
-                
-                // Área para el nombre (parte superior)
-                const nameAreaHeight = labelHeight * 0.4;
-                const nameAreaWidth = labelWidth * 0.8;
-                const nameX = currentX + (labelWidth - nameAreaWidth) / 2;
-                const nameY = currentY + 0.5;
-                
-                // Área para código de barras y piezas (parte inferior)
-                const barcodeAreaHeight = labelHeight * 0.4;
-                const barcodeAreaWidth = labelWidth * 0.6;
-                const barcodeX = currentX + (labelWidth - barcodeAreaWidth) / 2;
-                const barcodeY = currentY + nameAreaHeight + 0.5;
+                // 2. Nombre (ocupa el espacio restante)
+                const nombreY = currentY + nombreHeight / 2;
                 
                 // Calcular tamaño de fuente para el nombre
+                let fontSize = 36; // Tamaño inicial grande
                 doc.setFont(undefined, 'bold');
-                let fontSize = 24;
-                let textWidth;
                 
+                // Reducir tamaño hasta que quepa
+                let textWidth;
                 do {
                     doc.setFontSize(fontSize);
                     textWidth = doc.getTextWidth(label.nombre);
-                    if (textWidth > nameAreaWidth && fontSize > 8) {
-                        fontSize -= 0.5;
+                    if (textWidth > labelWidth * 0.9 && fontSize > 8) {
+                        fontSize -= 1;
                     } else {
                         break;
                     }
-                } while (textWidth > nameAreaWidth && fontSize > 8);
+                } while (textWidth > labelWidth * 0.9 && fontSize > 8);
                 
-                // Dibujar nombre
                 doc.setFontSize(fontSize);
-                doc.text(label.nombre, nameX + nameAreaWidth/2, nameY, { align: 'center', maxWidth: nameAreaWidth });
+                doc.text(label.nombre, marginLeft + labelWidth / 2, nombreY, { 
+                    align: 'center', 
+                    maxWidth: labelWidth * 0.9 
+                });
+                currentY += nombreHeight;
                 
-                // Dibujar asterisco si corresponde
-                if (label.tieneAsterisco) {
-                    doc.setFontSize(20);
-                    doc.setTextColor(255, 0, 0);
-                    doc.text('*', currentX + 0.5, currentY + 0.5);
-                    doc.setTextColor(0, 0, 0);
-                }
-                
-                // Dibujar código de barras y clave si corresponde
-                if (label.tieneClave) {
-                    // Código de barras (texto para impresora)
+                // 3. Código de barras (si tiene clave)
+                if (hasKey) {
+                    const barcodeY = currentY + sectionHeights.barcode / 2;
                     doc.setFontSize(10);
-                    doc.text(`*${label.clave}*`, barcodeX + barcodeAreaWidth/2, barcodeY + 1.0, { align: 'center' });
+                    doc.setFont(undefined, 'normal');
+                    // Usar fuente que soporte código de barras (texto especial)
+                    doc.text(`*${label.clave}*`, marginLeft + labelWidth / 2, barcodeY, { align: 'center' });
+                    currentY += sectionHeights.barcode;
                     
-                    // Clave
+                    // 4. Clave (debajo del código de barras)
+                    const claveY = currentY + sectionHeights.clave / 2;
                     doc.setFontSize(12);
-                    doc.text(label.clave, barcodeX + barcodeAreaWidth/2, barcodeY + 1.8, { align: 'center' });
+                    doc.setFont(undefined, 'bold');
+                    doc.text(label.clave, marginLeft + labelWidth / 2, claveY, { align: 'center' });
+                    currentY += sectionHeights.clave;
                 }
                 
-                // Dibujar información de piezas si corresponde
-                if (label.tienePiezas) {
+                // 5. Piezas (al lado del código de barras, si tiene)
+                if (hasPieces) {
+                    const piecesY = labelY + sectionHeights.blanco / 2 + sectionHeights.asterisco + 
+                                  nombreHeight + sectionHeights.barcode / 2;
                     doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
                     const piecesText = `${label.piezaActual} de ${label.totalPiezas}`;
-                    doc.text(piecesText, currentX + labelWidth - 1.0, barcodeY + 1.0, { align: 'right' });
+                    doc.text(piecesText, marginLeft + labelWidth - 1.0, piecesY, { align: 'right' });
                 }
                 
-                // Preparar para siguiente etiqueta
-                if (labelIndex % 2 === 0) {
-                    // Primera etiqueta de la página, mover hacia abajo para la segunda
-                    currentY += labelHeight;
-                } else {
-                    // Segunda etiqueta de la página, resetear para nueva página
-                    currentY = marginTop;
+                // Dibujar línea punteada solo en el medio de la página (entre etiquetas)
+                if (labelIndex % 2 === 0 && labelIndex + 1 < labels.length) {
+                    const lineY = labelY + labelHeight;
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.01);
+                    const dashPattern = [0.2, 0.2];
+                    doc.setLineDashPattern(dashPattern, 0);
+                    doc.line(marginLeft, lineY, marginLeft + labelWidth, lineY);
+                    doc.setLineDashPattern([], 0);
                 }
                 
                 labelIndex++;
