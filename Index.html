@@ -1,0 +1,1713 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Generación de Etiquetas</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        button.secondary {
+            background-color: #7f8c8d;
+        }
+
+        button.secondary:hover {
+            background-color: #636e72;
+        }
+
+        button.success {
+            background-color: #27ae60;
+        }
+
+        button.success:hover {
+            background-color: #219653;
+        }
+
+        button.warning {
+            background-color: #e67e22;
+        }
+
+        button.warning:hover {
+            background-color: #d35400;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .file-input-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: #219653;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .instructions {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            text-align: left;
+        }
+
+        .preview-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .label-preview {
+            display: inline-block;
+            border: 1px dashed #ccc;
+            margin: 5px;
+            vertical-align: top;
+            page-break-inside: avoid;
+            background-color: white;
+        }
+
+        .stone-label {
+            width: 1.31cm;
+            height: 7.43cm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            font-size: 8px;
+        }
+
+        .furniture-label {
+            width: 6cm;
+            height: 4cm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .barcode-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .label-name {
+            font-weight: bold;
+            text-align: center;
+            word-break: break-word;
+            width: 100%;
+        }
+
+        .label-clave {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .label-pieces {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .asterisk {
+            color: red;
+            font-weight: bold;
+            font-size: 16px;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .label-with-asterisk {
+            position: relative;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .step {
+            padding: 10px 20px;
+            background-color: #ecf0f1;
+            margin: 0 5px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .step.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-section, .print-section * {
+                visibility: visible;
+            }
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Generación de Etiquetas</h1>
+        
+        <!-- Pantalla principal -->
+        <div id="mainScreen">
+            <h2>Seleccione el tipo de etiquetas a generar</h2>
+            <div class="button-group">
+                <button id="stoneBtn">1. Etiquetas para Placas de Piedra</button>
+                <button id="furnitureBtn">2. Etiquetas para Muebles</button>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <p>1. Seleccione el tipo de etiquetas que desea generar.</p>
+                <p>2. Puede pegar datos directamente desde Excel manteniendo el orden de columnas.</p>
+                <p>3. También puede importar un archivo Excel para autocompletar la tabla.</p>
+                <p>4. Las etiquetas se generarán en formato PDF listo para imprimir.</p>
+            </div>
+        </div>
+        
+        <!-- Pantalla para placas de piedra -->
+        <div id="stoneScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step active">Placas de Piedra</div>
+            </div>
+            
+            <h2>Etiquetas para Placas de Piedra</h2>
+            
+            <div class="instructions">
+                <h3>Especificaciones:</h3>
+                <p>- Tamaño de etiqueta: 7.43 cm (alto) × 1.31 cm (ancho)</p>
+                <p>- Cada etiqueta mostrará código de barras arriba y nombre abajo</p>
+                <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, Cantidad</p>
+            </div>
+            
+            <div class="file-input-container">
+                <label for="stoneFileInput" class="file-input-label">
+                    Importar datos desde Excel
+                </label>
+                <input type="file" id="stoneFileInput" accept=".xlsx,.xls,.csv">
+            </div>
+            
+            <div class="table-container">
+                <table id="stoneTable">
+                    <thead>
+                        <tr>
+                            <th>Clave de la Placa</th>
+                            <th>Nombre de la Placa</th>
+                            <th>Cantidad de Etiquetas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stoneTableBody">
+                        <tr>
+                            <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
+                            <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
+                            <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
+                            <td><button class="secondary remove-row">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controls">
+                <button id="addStoneRow">+ Agregar Fila</button>
+                <button id="generateStoneLabels" class="success">Generar Etiquetas</button>
+                <button id="backFromStone" class="secondary">Volver al Inicio</button>
+            </div>
+            
+            <div id="stonePreview" class="preview-container hidden">
+                <h3>Vista Previa de Etiquetas</h3>
+                <div id="stonePreviewContainer"></div>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles - Selección con/sin clave -->
+        <div id="furnitureKeyScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step active">Muebles → Tipo de Etiqueta</div>
+            </div>
+            
+            <h2>Etiquetas para Muebles</h2>
+            <p>Seleccione el tipo de etiqueta:</p>
+            
+            <div class="button-group">
+                <button id="withKeyBtn">a) Etiquetas con Clave</button>
+                <button id="withoutKeyBtn">b) Etiquetas sin Clave</button>
+                <button id="backFromFurnitureKey" class="secondary">Volver</button>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles - Selección piezas -->
+        <div id="furniturePiecesScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step">Muebles → Tipo de Etiqueta</div>
+                <div class="step active">→ Varias/Una Pieza</div>
+            </div>
+            
+            <h2 id="furnitureTypeTitle">Etiquetas para Muebles</h2>
+            <p>¿Desea etiquetas para varias piezas o una pieza?</p>
+            
+            <div class="button-group">
+                <button id="multiplePiecesBtn">Varias Piezas</button>
+                <button id="singlePieceBtn">Una Pieza</button>
+                <button id="backFromFurniturePieces" class="secondary">Volver</button>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles con clave y varias piezas -->
+        <div id="furnitureWithKeyMultipleScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step">Muebles → Con Clave</div>
+                <div class="step active">→ Varias Piezas</div>
+            </div>
+            
+            <h2>Etiquetas para Muebles (Con Clave - Varias Piezas)</h2>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <p>- Complete la tabla con los datos requeridos</p>
+                <p>- La primera etiqueta de cada artículo incluirá un * para indicar pieza principal</p>
+                <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
+                <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, N° Etiquetas, N° Piezas</p>
+            </div>
+            
+            <div class="file-input-container">
+                <label for="furnitureFileInput" class="file-input-label">
+                    Importar datos desde Excel
+                </label>
+                <input type="file" id="furnitureFileInput" accept=".xlsx,.xls,.csv">
+            </div>
+            
+            <div class="table-container">
+                <table id="furnitureWithKeyMultipleTable">
+                    <thead>
+                        <tr>
+                            <th>Clave del Artículo</th>
+                            <th>Nombre del Artículo</th>
+                            <th>N° de Etiquetas</th>
+                            <th>N° de Piezas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="furnitureWithKeyMultipleBody">
+                        <tr>
+                            <td><input type="text" class="furniture-clave" placeholder="Ej: MUEBLE001"></td>
+                            <td><input type="text" class="furniture-nombre" placeholder="Ej: Cama King Size"></td>
+                            <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
+                            <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
+                            <td><button class="secondary remove-row">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controls">
+                <button id="addFurnitureWithKeyMultipleRow">+ Agregar Fila</button>
+                <button id="generateFurnitureWithKeyMultiple" class="success">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithKeyMultiple" class="secondary">Volver</button>
+            </div>
+            
+            <div id="furnitureWithKeyMultiplePreview" class="preview-container hidden">
+                <h3>Vista Previa de Etiquetas</h3>
+                <div id="furnitureWithKeyMultiplePreviewContainer"></div>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles con clave y una pieza -->
+        <div id="furnitureWithKeySingleScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step">Muebles → Con Clave</div>
+                <div class="step active">→ Una Pieza</div>
+            </div>
+            
+            <h2>Etiquetas para Muebles (Con Clave - Una Pieza)</h2>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <p>- Complete la tabla con los datos requeridos</p>
+                <p>- Cada etiqueta incluirá: Nombre, Clave y Código de Barras</p>
+                <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, N° Etiquetas</p>
+            </div>
+            
+            <div class="file-input-container">
+                <label for="furnitureSingleFileInput" class="file-input-label">
+                    Importar datos desde Excel
+                </label>
+                <input type="file" id="furnitureSingleFileInput" accept=".xlsx,.xls,.csv">
+            </div>
+            
+            <div class="table-container">
+                <table id="furnitureWithKeySingleTable">
+                    <thead>
+                        <tr>
+                            <th>Clave del Artículo</th>
+                            <th>Nombre del Artículo</th>
+                            <th>N° de Etiquetas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="furnitureWithKeySingleBody">
+                        <tr>
+                            <td><input type="text" class="furniture-clave-single" placeholder="Ej: MUEBLE001"></td>
+                            <td><input type="text" class="furniture-nombre-single" placeholder="Ej: Cama King Size"></td>
+                            <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
+                            <td><button class="secondary remove-row">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controls">
+                <button id="addFurnitureWithKeySingleRow">+ Agregar Fila</button>
+                <button id="generateFurnitureWithKeySingle" class="success">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithKeySingle" class="secondary">Volver</button>
+            </div>
+            
+            <div id="furnitureWithKeySinglePreview" class="preview-container hidden">
+                <h3>Vista Previa de Etiquetas</h3>
+                <div id="furnitureWithKeySinglePreviewContainer"></div>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles sin clave y varias piezas -->
+        <div id="furnitureWithoutKeyMultipleScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step">Muebles → Sin Clave</div>
+                <div class="step active">→ Varias Piezas</div>
+            </div>
+            
+            <h2>Etiquetas para Muebles (Sin Clave - Varias Piezas)</h2>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <p>- Complete la tabla con los datos requeridos</p>
+                <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
+                <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas, N° Piezas</p>
+            </div>
+            
+            <div class="file-input-container">
+                <label for="furnitureWithoutKeyFileInput" class="file-input-label">
+                    Importar datos desde Excel
+                </label>
+                <input type="file" id="furnitureWithoutKeyFileInput" accept=".xlsx,.xls,.csv">
+            </div>
+            
+            <div class="table-container">
+                <table id="furnitureWithoutKeyMultipleTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Artículo</th>
+                            <th>N° de Etiquetas</th>
+                            <th>N° de Piezas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="furnitureWithoutKeyMultipleBody">
+                        <tr>
+                            <td><input type="text" class="furniture-nombre-nokey" placeholder="Ej: Cama King Size"></td>
+                            <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
+                            <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
+                            <td><button class="secondary remove-row">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controls">
+                <button id="addFurnitureWithoutKeyMultipleRow">+ Agregar Fila</button>
+                <button id="generateFurnitureWithoutKeyMultiple" class="success">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithoutKeyMultiple" class="secondary">Volver</button>
+            </div>
+            
+            <div id="furnitureWithoutKeyMultiplePreview" class="preview-container hidden">
+                <h3>Vista Previa de Etiquetas</h3>
+                <div id="furnitureWithoutKeyMultiplePreviewContainer"></div>
+            </div>
+        </div>
+        
+        <!-- Pantalla para muebles sin clave y una pieza -->
+        <div id="furnitureWithoutKeySingleScreen" class="hidden">
+            <div class="step-indicator">
+                <div class="step">Muebles → Sin Clave</div>
+                <div class="step active">→ Una Pieza</div>
+            </div>
+            
+            <h2>Etiquetas para Muebles (Sin Clave - Una Pieza)</h2>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <p>- Complete la tabla con los datos requeridos</p>
+                <p>- Cada etiqueta incluirá solo el nombre del artículo</p>
+                <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas</p>
+            </div>
+            
+            <div class="file-input-container">
+                <label for="furnitureWithoutKeySingleFileInput" class="file-input-label">
+                    Importar datos desde Excel
+                </label>
+                <input type="file" id="furnitureWithoutKeySingleFileInput" accept=".xlsx,.xls,.csv">
+            </div>
+            
+            <div class="table-container">
+                <table id="furnitureWithoutKeySingleTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Artículo</th>
+                            <th>N° de Etiquetas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="furnitureWithoutKeySingleBody">
+                        <tr>
+                            <td><input type="text" class="furniture-nombre-nokey-single" placeholder="Ej: Cama King Size"></td>
+                            <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
+                            <td><button class="secondary remove-row">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="controls">
+                <button id="addFurnitureWithoutKeySingleRow">+ Agregar Fila</button>
+                <button id="generateFurnitureWithoutKeySingle" class="success">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithoutKeySingle" class="secondary">Volver</button>
+            </div>
+            
+            <div id="furnitureWithoutKeySinglePreview" class="preview-container hidden">
+                <h3>Vista Previa de Etiquetas</h3>
+                <div id="furnitureWithoutKeySinglePreviewContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentFurnitureType = ''; // 'withKey' o 'withoutKey'
+        let currentPiecesType = ''; // 'multiple' o 'single'
+        
+        // Inicialización de eventos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botones principales
+            document.getElementById('stoneBtn').addEventListener('click', showStoneScreen);
+            document.getElementById('furnitureBtn').addEventListener('click', showFurnitureKeyScreen);
+            
+            // Botones de navegación para piedra
+            document.getElementById('backFromStone').addEventListener('click', showMainScreen);
+            document.getElementById('addStoneRow').addEventListener('click', addStoneRow);
+            document.getElementById('generateStoneLabels').addEventListener('click', generateStoneLabels);
+            
+            // Botones para muebles - selección de clave
+            document.getElementById('withKeyBtn').addEventListener('click', () => showFurniturePiecesScreen('withKey'));
+            document.getElementById('withoutKeyBtn').addEventListener('click', () => showFurniturePiecesScreen('withoutKey'));
+            document.getElementById('backFromFurnitureKey').addEventListener('click', showMainScreen);
+            
+            // Botones para muebles - selección de piezas
+            document.getElementById('multiplePiecesBtn').addEventListener('click', showFurnitureScreen);
+            document.getElementById('singlePieceBtn').addEventListener('click', showFurnitureScreen);
+            document.getElementById('backFromFurniturePieces').addEventListener('click', showFurnitureKeyScreen);
+            
+            // Botones para muebles con clave y varias piezas
+            document.getElementById('addFurnitureWithKeyMultipleRow').addEventListener('click', () => addFurnitureRow('withKeyMultiple'));
+            document.getElementById('generateFurnitureWithKeyMultiple').addEventListener('click', () => generateFurnitureLabels('withKeyMultiple'));
+            document.getElementById('backFromFurnitureWithKeyMultiple').addEventListener('click', showFurniturePiecesScreenFromSubscreen);
+            
+            // Botones para muebles con clave y una pieza
+            document.getElementById('addFurnitureWithKeySingleRow').addEventListener('click', () => addFurnitureRow('withKeySingle'));
+            document.getElementById('generateFurnitureWithKeySingle').addEventListener('click', () => generateFurnitureLabels('withKeySingle'));
+            document.getElementById('backFromFurnitureWithKeySingle').addEventListener('click', showFurniturePiecesScreenFromSubscreen);
+            
+            // Botones para muebles sin clave y varias piezas
+            document.getElementById('addFurnitureWithoutKeyMultipleRow').addEventListener('click', () => addFurnitureRow('withoutKeyMultiple'));
+            document.getElementById('generateFurnitureWithoutKeyMultiple').addEventListener('click', () => generateFurnitureLabels('withoutKeyMultiple'));
+            document.getElementById('backFromFurnitureWithoutKeyMultiple').addEventListener('click', showFurniturePiecesScreenFromSubscreen);
+            
+            // Botones para muebles sin clave y una pieza
+            document.getElementById('addFurnitureWithoutKeySingleRow').addEventListener('click', () => addFurnitureRow('withoutKeySingle'));
+            document.getElementById('generateFurnitureWithoutKeySingle').addEventListener('click', () => generateFurnitureLabels('withoutKeySingle'));
+            document.getElementById('backFromFurnitureWithoutKeySingle').addEventListener('click', showFurniturePiecesScreenFromSubscreen);
+            
+            // Eventos para eliminar filas (delegación de eventos)
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('remove-row')) {
+                    const row = e.target.closest('tr');
+                    if (row && row.parentElement.querySelectorAll('tr').length > 1) {
+                        row.remove();
+                    }
+                }
+            });
+            
+            // Eventos para pegar desde Excel
+            document.addEventListener('paste', handlePaste);
+            
+            // Eventos para importar archivos Excel
+            document.getElementById('stoneFileInput').addEventListener('change', handleStoneFileImport);
+            document.getElementById('furnitureFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withKeyMultiple'));
+            document.getElementById('furnitureSingleFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withKeySingle'));
+            document.getElementById('furnitureWithoutKeyFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withoutKeyMultiple'));
+            document.getElementById('furnitureWithoutKeySingleFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withoutKeySingle'));
+        });
+        
+        // Funciones de navegación
+        function showMainScreen() {
+            hideAllScreens();
+            document.getElementById('mainScreen').classList.remove('hidden');
+        }
+        
+        function showStoneScreen() {
+            hideAllScreens();
+            document.getElementById('stoneScreen').classList.remove('hidden');
+        }
+        
+        function showFurnitureKeyScreen() {
+            hideAllScreens();
+            document.getElementById('furnitureKeyScreen').classList.remove('hidden');
+        }
+        
+        function showFurniturePiecesScreen(type) {
+            currentFurnitureType = type;
+            hideAllScreens();
+            document.getElementById('furniturePiecesScreen').classList.remove('hidden');
+            document.getElementById('furnitureTypeTitle').textContent = 
+                type === 'withKey' ? 'Etiquetas para Muebles (Con Clave)' : 'Etiquetas para Muebles (Sin Clave)';
+        }
+        
+        function showFurniturePiecesScreenFromSubscreen() {
+            showFurniturePiecesScreen(currentFurnitureType);
+        }
+        
+        function showFurnitureScreen() {
+            const buttonId = event.target.id;
+            
+            if (buttonId === 'multiplePiecesBtn') {
+                currentPiecesType = 'multiple';
+            } else if (buttonId === 'singlePieceBtn') {
+                currentPiecesType = 'single';
+            }
+            
+            let screenId = '';
+            if (currentFurnitureType === 'withKey' && currentPiecesType === 'multiple') {
+                screenId = 'furnitureWithKeyMultipleScreen';
+            } else if (currentFurnitureType === 'withKey' && currentPiecesType === 'single') {
+                screenId = 'furnitureWithKeySingleScreen';
+            } else if (currentFurnitureType === 'withoutKey' && currentPiecesType === 'multiple') {
+                screenId = 'furnitureWithoutKeyMultipleScreen';
+            } else if (currentFurnitureType === 'withoutKey' && currentPiecesType === 'single') {
+                screenId = 'furnitureWithoutKeySingleScreen';
+            }
+            
+            hideAllScreens();
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+        
+        function hideAllScreens() {
+            const screens = [
+                'mainScreen', 'stoneScreen', 'furnitureKeyScreen', 'furniturePiecesScreen',
+                'furnitureWithKeyMultipleScreen', 'furnitureWithKeySingleScreen',
+                'furnitureWithoutKeyMultipleScreen', 'furnitureWithoutKeySingleScreen'
+            ];
+            
+            screens.forEach(screenId => {
+                document.getElementById(screenId).classList.add('hidden');
+            });
+            
+            // Ocultar todas las vistas previas
+            const previews = document.querySelectorAll('.preview-container');
+            previews.forEach(preview => {
+                preview.classList.add('hidden');
+            });
+        }
+        
+        // Funciones para manejar tablas
+        function addStoneRow() {
+            const tbody = document.getElementById('stoneTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
+                <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
+                <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
+                <td><button class="secondary remove-row">Eliminar</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+        
+        function addFurnitureRow(type) {
+            let tbodyId = '';
+            let html = '';
+            
+            switch(type) {
+                case 'withKeyMultiple':
+                    tbodyId = 'furnitureWithKeyMultipleBody';
+                    html = `
+                        <td><input type="text" class="furniture-clave" placeholder="Ej: MUEBLE001"></td>
+                        <td><input type="text" class="furniture-nombre" placeholder="Ej: Cama King Size"></td>
+                        <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    `;
+                    break;
+                case 'withKeySingle':
+                    tbodyId = 'furnitureWithKeySingleBody';
+                    html = `
+                        <td><input type="text" class="furniture-clave-single" placeholder="Ej: MUEBLE001"></td>
+                        <td><input type="text" class="furniture-nombre-single" placeholder="Ej: Cama King Size"></td>
+                        <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    `;
+                    break;
+                case 'withoutKeyMultiple':
+                    tbodyId = 'furnitureWithoutKeyMultipleBody';
+                    html = `
+                        <td><input type="text" class="furniture-nombre-nokey" placeholder="Ej: Cama King Size"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    `;
+                    break;
+                case 'withoutKeySingle':
+                    tbodyId = 'furnitureWithoutKeySingleBody';
+                    html = `
+                        <td><input type="text" class="furniture-nombre-nokey-single" placeholder="Ej: Cama King Size"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    `;
+                    break;
+            }
+            
+            const tbody = document.getElementById(tbodyId);
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = html;
+            tbody.appendChild(newRow);
+        }
+        
+        // Función para manejar pegado desde Excel
+        function handlePaste(event) {
+            const activeElement = document.activeElement;
+            const isInput = activeElement.tagName === 'INPUT';
+            
+            if (!isInput) {
+                event.preventDefault();
+                const clipboardData = event.clipboardData || window.clipboardData;
+                const pastedData = clipboardData.getData('Text');
+                
+                // Determinar en qué pantalla estamos
+                let screen = '';
+                if (!document.getElementById('stoneScreen').classList.contains('hidden')) {
+                    screen = 'stone';
+                } else if (!document.getElementById('furnitureWithKeyMultipleScreen').classList.contains('hidden')) {
+                    screen = 'furnitureWithKeyMultiple';
+                } else if (!document.getElementById('furnitureWithKeySingleScreen').classList.contains('hidden')) {
+                    screen = 'furnitureWithKeySingle';
+                } else if (!document.getElementById('furnitureWithoutKeyMultipleScreen').classList.contains('hidden')) {
+                    screen = 'furnitureWithoutKeyMultiple';
+                } else if (!document.getElementById('furnitureWithoutKeySingleScreen').classList.contains('hidden')) {
+                    screen = 'furnitureWithoutKeySingle';
+                }
+                
+                if (screen) {
+                    processPastedData(pastedData, screen);
+                }
+            }
+        }
+        
+        function processPastedData(data, screen) {
+            const rows = data.split('\n').filter(row => row.trim() !== '');
+            
+            // Limpiar tabla existente (excepto la primera fila)
+            let tbody;
+            let rowTemplate;
+            
+            switch(screen) {
+                case 'stone':
+                    tbody = document.getElementById('stoneTableBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="stone-clave"></td>
+                        <td><input type="text" class="stone-nombre"></td>
+                        <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    break;
+                case 'furnitureWithKeyMultiple':
+                    tbody = document.getElementById('furnitureWithKeyMultipleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-clave"></td>
+                        <td><input type="text" class="furniture-nombre"></td>
+                        <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    break;
+                case 'furnitureWithKeySingle':
+                    tbody = document.getElementById('furnitureWithKeySingleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-clave-single"></td>
+                        <td><input type="text" class="furniture-nombre-single"></td>
+                        <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    break;
+                case 'furnitureWithoutKeyMultiple':
+                    tbody = document.getElementById('furnitureWithoutKeyMultipleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-nombre-nokey"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    break;
+                case 'furnitureWithoutKeySingle':
+                    tbody = document.getElementById('furnitureWithoutKeySingleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-nombre-nokey-single"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    break;
+            }
+            
+            // Limpiar tabla (dejar solo la primera fila)
+            while (tbody.children.length > 1) {
+                tbody.removeChild(tbody.lastChild);
+            }
+            
+            // Procesar cada fila pegada
+            rows.forEach((row, rowIndex) => {
+                const cells = row.split('\t');
+                
+                if (rowIndex === 0 && cells.length > 0) {
+                    // Primera fila (actual)
+                    const firstRow = tbody.children[0];
+                    const inputs = firstRow.querySelectorAll('input');
+                    
+                    cells.forEach((cell, cellIndex) => {
+                        if (cellIndex < inputs.length) {
+                            inputs[cellIndex].value = cell.trim();
+                        }
+                    });
+                } else if (cells.length > 0) {
+                    // Filas adicionales
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = rowTemplate;
+                    tbody.appendChild(newRow);
+                    
+                    const inputs = newRow.querySelectorAll('input');
+                    cells.forEach((cell, cellIndex) => {
+                        if (cellIndex < inputs.length) {
+                            inputs[cellIndex].value = cell.trim();
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Función para importar archivos Excel
+        function handleStoneFileImport(event) {
+            handleFileImport(event, 'stone');
+        }
+        
+        function handleFurnitureFileImport(event, type) {
+            handleFileImport(event, type);
+        }
+        
+        function handleFileImport(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const sheetData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                processImportedData(sheetData, type);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function processImportedData(data, type) {
+            // Filtrar filas vacías
+            const rows = data.filter(row => row.some(cell => cell !== null && cell !== ''));
+            
+            let tbody;
+            let rowTemplate;
+            let columnCount;
+            
+            switch(type) {
+                case 'stone':
+                    tbody = document.getElementById('stoneTableBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="stone-clave"></td>
+                        <td><input type="text" class="stone-nombre"></td>
+                        <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    columnCount = 3;
+                    break;
+                case 'withKeyMultiple':
+                    tbody = document.getElementById('furnitureWithKeyMultipleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-clave"></td>
+                        <td><input type="text" class="furniture-nombre"></td>
+                        <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    columnCount = 4;
+                    break;
+                case 'withKeySingle':
+                    tbody = document.getElementById('furnitureWithKeySingleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-clave-single"></td>
+                        <td><input type="text" class="furniture-nombre-single"></td>
+                        <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    columnCount = 3;
+                    break;
+                case 'withoutKeyMultiple':
+                    tbody = document.getElementById('furnitureWithoutKeyMultipleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-nombre-nokey"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
+                        <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    columnCount = 3;
+                    break;
+                case 'withoutKeySingle':
+                    tbody = document.getElementById('furnitureWithoutKeySingleBody');
+                    rowTemplate = `<tr>
+                        <td><input type="text" class="furniture-nombre-nokey-single"></td>
+                        <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
+                        <td><button class="secondary remove-row">Eliminar</button></td>
+                    </tr>`;
+                    columnCount = 2;
+                    break;
+            }
+            
+            // Limpiar tabla (dejar solo la primera fila)
+            while (tbody.children.length > 1) {
+                tbody.removeChild(tbody.lastChild);
+            }
+            
+            // Procesar datos
+            rows.forEach((row, rowIndex) => {
+                if (rowIndex === 0) {
+                    // Primera fila
+                    const firstRow = tbody.children[0];
+                    const inputs = firstRow.querySelectorAll('input');
+                    
+                    row.forEach((cell, cellIndex) => {
+                        if (cellIndex < inputs.length) {
+                            inputs[cellIndex].value = cell !== null ? String(cell).trim() : '';
+                        }
+                    });
+                } else {
+                    // Filas adicionales
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = rowTemplate;
+                    tbody.appendChild(newRow);
+                    
+                    const inputs = newRow.querySelectorAll('input');
+                    row.forEach((cell, cellIndex) => {
+                        if (cellIndex < inputs.length) {
+                            inputs[cellIndex].value = cell !== null ? String(cell).trim() : '';
+                        }
+                    });
+                }
+            });
+            
+            event.target.value = ''; // Resetear input de archivo
+        }
+        
+        // Función para generar etiquetas de piedra
+        function generateStoneLabels() {
+            const rows = document.querySelectorAll('#stoneTableBody tr');
+            const labels = [];
+            
+            rows.forEach(row => {
+                const clave = row.querySelector('.stone-clave').value.trim();
+                const nombre = row.querySelector('.stone-nombre').value.trim();
+                const cantidad = parseInt(row.querySelector('.stone-cantidad').value) || 0;
+                
+                if (clave && nombre && cantidad > 0) {
+                    for (let i = 0; i < cantidad; i++) {
+                        labels.push({ clave, nombre });
+                    }
+                }
+            });
+            
+            if (labels.length === 0) {
+                alert('Por favor, ingrese al menos una etiqueta válida.');
+                return;
+            }
+            
+            // Mostrar vista previa
+            showStonePreview(labels);
+            
+            // Generar PDF
+            generateStonePDF(labels);
+        }
+        
+        function showStonePreview(labels) {
+            const container = document.getElementById('stonePreviewContainer');
+            container.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'label-preview stone-label';
+                labelDiv.innerHTML = `
+                    <div class="barcode-container">
+                        <svg class="barcode"></svg>
+                    </div>
+                    <div class="label-name">${label.nombre}</div>
+                `;
+                container.appendChild(labelDiv);
+                
+                // Generar código de barras
+                setTimeout(() => {
+                    JsBarcode(`.barcode:eq(${index})`, `*${label.clave}*`, {
+                        format: "CODE128",
+                        lineColor: "#000",
+                        width: 1,
+                        height: 30,
+                        displayValue: false
+                    });
+                }, 100);
+            });
+            
+            document.getElementById('stonePreview').classList.remove('hidden');
+        }
+        
+        function generateStonePDF(labels) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'cm',
+                format: 'letter'
+            });
+            
+            // Configuración para hoja carta (21.59cm x 27.94cm)
+            const pageWidth = 21.59;
+            const pageHeight = 27.94;
+            
+            // Tamaño de etiqueta
+            const labelWidth = 1.31;
+            const labelHeight = 7.43;
+            
+            // Margenes
+            const marginX = 0.5;
+            const marginY = 0.5;
+            
+            // Calcular cuántas etiquetas caben por fila y columna
+            const labelsPerRow = Math.floor((pageWidth - 2 * marginX) / labelWidth);
+            const labelsPerColumn = Math.floor((pageHeight - 2 * marginY) / labelHeight);
+            
+            let currentX = marginX;
+            let currentY = marginY;
+            let labelIndex = 0;
+            
+            // Configurar fuente
+            doc.setFont("helvetica", "normal");
+            
+            for (let row = 0; row < labelsPerColumn; row++) {
+                for (let col = 0; col < labelsPerRow; col++) {
+                    if (labelIndex >= labels.length) break;
+                    
+                    const label = labels[labelIndex];
+                    
+                    // Dibujar borde punteado
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.01);
+                    
+                    // Crear bordes punteados manualmente
+                    const dashLength = 0.1;
+                    const gapLength = 0.1;
+                    
+                    // Línea superior
+                    drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
+                    // Línea derecha
+                    drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                    // Línea inferior
+                    drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                    // Línea izquierda
+                    drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
+                    
+                    // Calcular posición para código de barras y texto
+                    const barcodeY = currentY + 0.5;
+                    const textY = currentY + labelHeight - 1;
+                    
+                    // Agregar código de barras (usaremos texto que puede ser convertido por impresora)
+                    doc.setFontSize(8);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`*${label.clave}*`, currentX + labelWidth/2, barcodeY, { align: 'center' });
+                    
+                    // Agregar nombre
+                    doc.setFontSize(7);
+                    doc.text(label.nombre, currentX + labelWidth/2, textY, { align: 'center', maxWidth: labelWidth - 0.2 });
+                    
+                    currentX += labelWidth;
+                    labelIndex++;
+                }
+                
+                currentX = marginX;
+                currentY += labelHeight;
+                
+                if (labelIndex >= labels.length) break;
+            }
+            
+            // Si hay más etiquetas, agregar nuevas páginas
+            while (labelIndex < labels.length) {
+                doc.addPage();
+                currentX = marginX;
+                currentY = marginY;
+                
+                for (let row = 0; row < labelsPerColumn; row++) {
+                    for (let col = 0; col < labelsPerRow; col++) {
+                        if (labelIndex >= labels.length) break;
+                        
+                        const label = labels[labelIndex];
+                        
+                        // Dibujar borde punteado
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setLineWidth(0.01);
+                        
+                        // Crear bordes punteados manualmente
+                        const dashLength = 0.1;
+                        const gapLength = 0.1;
+                        
+                        // Línea superior
+                        drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
+                        // Línea derecha
+                        drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                        // Línea inferior
+                        drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                        // Línea izquierda
+                        drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
+                        
+                        // Calcular posición para código de barras y texto
+                        const barcodeY = currentY + 0.5;
+                        const textY = currentY + labelHeight - 1;
+                        
+                        // Agregar código de barras
+                        doc.setFontSize(8);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(`*${label.clave}*`, currentX + labelWidth/2, barcodeY, { align: 'center' });
+                        
+                        // Agregar nombre
+                        doc.setFontSize(7);
+                        doc.text(label.nombre, currentX + labelWidth/2, textY, { align: 'center', maxWidth: labelWidth - 0.2 });
+                        
+                        currentX += labelWidth;
+                        labelIndex++;
+                    }
+                    
+                    currentX = marginX;
+                    currentY += labelHeight;
+                    
+                    if (labelIndex >= labels.length) break;
+                }
+            }
+            
+            // Guardar PDF
+            doc.save('etiquetas_placas_piedra.pdf');
+        }
+        
+        function drawDashedLine(doc, x1, y1, x2, y2, dashLength, gapLength) {
+            const isHorizontal = Math.abs(y2 - y1) < Math.abs(x2 - x1);
+            
+            if (isHorizontal) {
+                const length = x2 - x1;
+                const steps = Math.ceil(length / (dashLength + gapLength));
+                
+                for (let i = 0; i < steps; i++) {
+                    const start = x1 + i * (dashLength + gapLength);
+                    const end = Math.min(start + dashLength, x2);
+                    
+                    if (start < x2) {
+                        doc.line(start, y1, end, y1);
+                    }
+                }
+            } else {
+                const length = y2 - y1;
+                const steps = Math.ceil(length / (dashLength + gapLength));
+                
+                for (let i = 0; i < steps; i++) {
+                    const start = y1 + i * (dashLength + gapLength);
+                    const end = Math.min(start + dashLength, y2);
+                    
+                    if (start < y2) {
+                        doc.line(x1, start, x1, end);
+                    }
+                }
+            }
+        }
+        
+        // Función para generar etiquetas de muebles
+        function generateFurnitureLabels(type) {
+            let labels = [];
+            
+            switch(type) {
+                case 'withKeyMultiple':
+                    labels = getFurnitureWithKeyMultipleLabels();
+                    showFurniturePreview(labels, type);
+                    generateFurniturePDF(labels, type);
+                    break;
+                case 'withKeySingle':
+                    labels = getFurnitureWithKeySingleLabels();
+                    showFurniturePreview(labels, type);
+                    generateFurniturePDF(labels, type);
+                    break;
+                case 'withoutKeyMultiple':
+                    labels = getFurnitureWithoutKeyMultipleLabels();
+                    showFurniturePreview(labels, type);
+                    generateFurniturePDF(labels, type);
+                    break;
+                case 'withoutKeySingle':
+                    labels = getFurnitureWithoutKeySingleLabels();
+                    showFurniturePreview(labels, type);
+                    generateFurniturePDF(labels, type);
+                    break;
+            }
+        }
+        
+        function getFurnitureWithKeyMultipleLabels() {
+            const rows = document.querySelectorAll('#furnitureWithKeyMultipleBody tr');
+            const labels = [];
+            
+            rows.forEach(row => {
+                const clave = row.querySelector('.furniture-clave').value.trim();
+                const nombre = row.querySelector('.furniture-nombre').value.trim();
+                const etiquetas = parseInt(row.querySelector('.furniture-etiquetas').value) || 0;
+                const piezas = parseInt(row.querySelector('.furniture-piezas').value) || 1;
+                
+                if (clave && nombre && etiquetas > 0) {
+                    for (let e = 0; e < etiquetas; e++) {
+                        for (let p = 1; p <= piezas; p++) {
+                            const isFirstPiece = p === 1;
+                            labels.push({
+                                clave,
+                                nombre,
+                                piezaActual: p,
+                                totalPiezas: piezas,
+                                tieneAsterisco: isFirstPiece,
+                                tieneClave: true,
+                                tienePiezas: true
+                            });
+                        }
+                    }
+                }
+            });
+            
+            return labels;
+        }
+        
+        function getFurnitureWithKeySingleLabels() {
+            const rows = document.querySelectorAll('#furnitureWithKeySingleBody tr');
+            const labels = [];
+            
+            rows.forEach(row => {
+                const clave = row.querySelector('.furniture-clave-single').value.trim();
+                const nombre = row.querySelector('.furniture-nombre-single').value.trim();
+                const etiquetas = parseInt(row.querySelector('.furniture-etiquetas-single').value) || 0;
+                
+                if (clave && nombre && etiquetas > 0) {
+                    for (let i = 0; i < etiquetas; i++) {
+                        labels.push({
+                            clave,
+                            nombre,
+                            tieneClave: true,
+                            tienePiezas: false
+                        });
+                    }
+                }
+            });
+            
+            return labels;
+        }
+        
+        function getFurnitureWithoutKeyMultipleLabels() {
+            const rows = document.querySelectorAll('#furnitureWithoutKeyMultipleBody tr');
+            const labels = [];
+            
+            rows.forEach(row => {
+                const nombre = row.querySelector('.furniture-nombre-nokey').value.trim();
+                const etiquetas = parseInt(row.querySelector('.furniture-etiquetas-nokey').value) || 0;
+                const piezas = parseInt(row.querySelector('.furniture-piezas-nokey').value) || 1;
+                
+                if (nombre && etiquetas > 0) {
+                    for (let e = 0; e < etiquetas; e++) {
+                        for (let p = 1; p <= piezas; p++) {
+                            labels.push({
+                                nombre,
+                                piezaActual: p,
+                                totalPiezas: piezas,
+                                tieneClave: false,
+                                tienePiezas: true
+                            });
+                        }
+                    }
+                }
+            });
+            
+            return labels;
+        }
+        
+        function getFurnitureWithoutKeySingleLabels() {
+            const rows = document.querySelectorAll('#furnitureWithoutKeySingleBody tr');
+            const labels = [];
+            
+            rows.forEach(row => {
+                const nombre = row.querySelector('.furniture-nombre-nokey-single').value.trim();
+                const etiquetas = parseInt(row.querySelector('.furniture-etiquetas-nokey-single').value) || 0;
+                
+                if (nombre && etiquetas > 0) {
+                    for (let i = 0; i < etiquetas; i++) {
+                        labels.push({
+                            nombre,
+                            tieneClave: false,
+                            tienePiezas: false
+                        });
+                    }
+                }
+            });
+            
+            return labels;
+        }
+        
+        function showFurniturePreview(labels, type) {
+            let containerId = '';
+            switch(type) {
+                case 'withKeyMultiple':
+                    containerId = 'furnitureWithKeyMultiplePreviewContainer';
+                    document.getElementById('furnitureWithKeyMultiplePreview').classList.remove('hidden');
+                    break;
+                case 'withKeySingle':
+                    containerId = 'furnitureWithKeySinglePreviewContainer';
+                    document.getElementById('furnitureWithKeySinglePreview').classList.remove('hidden');
+                    break;
+                case 'withoutKeyMultiple':
+                    containerId = 'furnitureWithoutKeyMultiplePreviewContainer';
+                    document.getElementById('furnitureWithoutKeyMultiplePreview').classList.remove('hidden');
+                    break;
+                case 'withoutKeySingle':
+                    containerId = 'furnitureWithoutKeySinglePreviewContainer';
+                    document.getElementById('furnitureWithoutKeySinglePreview').classList.remove('hidden');
+                    break;
+            }
+            
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'label-preview furniture-label';
+                
+                let html = '';
+                
+                if (label.tieneAsterisko) {
+                    html += '<div class="asterisk">*</div>';
+                    labelDiv.classList.add('label-with-asterisk');
+                }
+                
+                html += `<div class="label-name">${label.nombre}</div>`;
+                
+                if (label.tieneClave) {
+                    html += `<div class="label-clave">${label.clave}</div>`;
+                    html += '<div class="barcode-container"><svg class="barcode"></svg></div>';
+                }
+                
+                if (label.tienePiezas) {
+                    html += `<div class="label-pieces">Pieza ${label.piezaActual} de ${label.totalPiezas}</div>`;
+                }
+                
+                labelDiv.innerHTML = html;
+                container.appendChild(labelDiv);
+                
+                // Generar código de barras si es necesario
+                if (label.tieneClave) {
+                    setTimeout(() => {
+                        JsBarcode(`.barcode:eq(${index})`, `*${label.clave}*`, {
+                            format: "CODE128",
+                            lineColor: "#000",
+                            width: 1,
+                            height: 40,
+                            displayValue: false
+                        });
+                    }, 100);
+                }
+            });
+        }
+        
+        function generateFurniturePDF(labels, type) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'cm',
+                format: 'letter'
+            });
+            
+            // Configuración para hoja carta
+            const pageWidth = 21.59;
+            const pageHeight = 27.94;
+            
+            // Tamaño de etiqueta para muebles (más grande)
+            const labelWidth = 6;
+            const labelHeight = 4;
+            
+            // Margenes
+            const marginX = 1;
+            const marginY = 1;
+            
+            // Calcular cuántas etiquetas caben por fila y columna
+            const labelsPerRow = Math.floor((pageWidth - 2 * marginX) / labelWidth);
+            const labelsPerColumn = Math.floor((pageHeight - 2 * marginY) / labelHeight);
+            
+            let currentX = marginX;
+            let currentY = marginY;
+            let labelIndex = 0;
+            
+            // Configurar fuente
+            doc.setFont("helvetica", "normal");
+            
+            for (let row = 0; row < labelsPerColumn; row++) {
+                for (let col = 0; col < labelsPerRow; col++) {
+                    if (labelIndex >= labels.length) break;
+                    
+                    const label = labels[labelIndex];
+                    
+                    // Dibujar borde punteado
+                    doc.setDrawColor(200, 200, 200);
+                    doc.setLineWidth(0.01);
+                    
+                    // Crear bordes punteados manualmente
+                    const dashLength = 0.2;
+                    const gapLength = 0.2;
+                    
+                    // Línea superior
+                    drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
+                    // Línea derecha
+                    drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                    // Línea inferior
+                    drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                    // Línea izquierda
+                    drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
+                    
+                    // Calcular posiciones
+                    let currentTextY = currentY + 0.5;
+                    
+                    // Agregar asterisco si corresponde
+                    if (label.tieneAsterisko) {
+                        doc.setFontSize(12);
+                        doc.setTextColor(255, 0, 0);
+                        doc.text('*', currentX + 0.3, currentTextY);
+                        currentTextY += 0.5;
+                    }
+                    
+                    // Agregar nombre (texto más grande)
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(label.nombre, currentX + labelWidth/2, currentTextY, { 
+                        align: 'center', 
+                        maxWidth: labelWidth - 0.5 
+                    });
+                    currentTextY += 0.8;
+                    
+                    // Agregar clave si corresponde
+                    if (label.tieneClave) {
+                        doc.setFontSize(10);
+                        doc.text(label.clave, currentX + labelWidth/2, currentTextY, { align: 'center' });
+                        currentTextY += 0.6;
+                        
+                        // Agregar código de barras (texto para conversión)
+                        doc.setFontSize(8);
+                        doc.text(`*${label.clave}*`, currentX + labelWidth/2, currentTextY, { align: 'center' });
+                        currentTextY += 0.6;
+                    }
+                    
+                    // Agregar información de piezas si corresponde
+                    if (label.tienePiezas) {
+                        doc.setFontSize(10);
+                        doc.text(`Pieza ${label.piezaActual} de ${label.totalPiezas}`, 
+                                currentX + labelWidth/2, currentTextY, { align: 'center' });
+                    }
+                    
+                    currentX += labelWidth;
+                    labelIndex++;
+                }
+                
+                currentX = marginX;
+                currentY += labelHeight;
+                
+                if (labelIndex >= labels.length) break;
+            }
+            
+            // Si hay más etiquetas, agregar nuevas páginas
+            while (labelIndex < labels.length) {
+                doc.addPage();
+                currentX = marginX;
+                currentY = marginY;
+                
+                for (let row = 0; row < labelsPerColumn; row++) {
+                    for (let col = 0; col < labelsPerRow; col++) {
+                        if (labelIndex >= labels.length) break;
+                        
+                        const label = labels[labelIndex];
+                        
+                        // Dibujar borde punteado
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setLineWidth(0.01);
+                        
+                        // Crear bordes punteados manualmente
+                        const dashLength = 0.2;
+                        const gapLength = 0.2;
+                        
+                        // Línea superior
+                        drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
+                        // Línea derecha
+                        drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                        // Línea inferior
+                        drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
+                        // Línea izquierda
+                        drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
+                        
+                        // Calcular posiciones
+                        let currentTextY = currentY + 0.5;
+                        
+                        // Agregar asterisco si corresponde
+                        if (label.tieneAsterisko) {
+                            doc.setFontSize(12);
+                            doc.setTextColor(255, 0, 0);
+                            doc.text('*', currentX + 0.3, currentTextY);
+                            currentTextY += 0.5;
+                        }
+                        
+                        // Agregar nombre (texto más grande)
+                        doc.setFontSize(12);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(label.nombre, currentX + labelWidth/2, currentTextY, { 
+                            align: 'center', 
+                            maxWidth: labelWidth - 0.5 
+                        });
+                        currentTextY += 0.8;
+                        
+                        // Agregar clave si corresponde
+                        if (label.tieneClave) {
+                            doc.setFontSize(10);
+                            doc.text(label.clave, currentX + labelWidth/2, currentTextY, { align: 'center' });
+                            currentTextY += 0.6;
+                            
+                            // Agregar código de barras (texto para conversión)
+                            doc.setFontSize(8);
+                            doc.text(`*${label.clave}*`, currentX + labelWidth/2, currentTextY, { align: 'center' });
+                            currentTextY += 0.6;
+                        }
+                        
+                        // Agregar información de piezas si corresponde
+                        if (label.tienePiezas) {
+                            doc.setFontSize(10);
+                            doc.text(`Pieza ${label.piezaActual} de ${label.totalPiezas}`, 
+                                    currentX + labelWidth/2, currentTextY, { align: 'center' });
+                        }
+                        
+                        currentX += labelWidth;
+                        labelIndex++;
+                    }
+                    
+                    currentX = marginX;
+                    currentY += labelHeight;
+                    
+                    if (labelIndex >= labels.length) break;
+                }
+            }
+            
+            // Guardar PDF con nombre apropiado
+            let filename = '';
+            switch(type) {
+                case 'withKeyMultiple':
+                    filename = 'etiquetas_muebles_con_clave_varias_piezas.pdf';
+                    break;
+                case 'withKeySingle':
+                    filename = 'etiquetas_muebles_con_clave_una_pieza.pdf';
+                    break;
+                case 'withoutKeyMultiple':
+                    filename = 'etiquetas_muebles_sin_clave_varias_piezas.pdf';
+                    break;
+                case 'withoutKeySingle':
+                    filename = 'etiquetas_muebles_sin_clave_una_pieza.pdf';
+                    break;
+            }
+            
+            doc.save(filename);
+        }
+    </script>
+</body>
+</html>
