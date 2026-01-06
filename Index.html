@@ -6,7 +6,6 @@
     <title>Sistema de Generación de Etiquetas</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -17,7 +16,7 @@
         }
 
         body {
-            background-color: #f5f5f5;
+            background-color: #fff8e1;
             color: #333;
             line-height: 1.6;
             padding: 20px;
@@ -27,72 +26,118 @@
 
         .container {
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f0f0;
         }
 
         h1, h2, h3 {
-            color: #2c3e50;
             margin-bottom: 20px;
             text-align: center;
         }
 
         h1 {
-            border-bottom: 3px solid #3498db;
+            color: #333;
+            border-bottom: 2px solid #fcc919;
             padding-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: #444;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: #555;
+            font-size: 18px;
+            font-weight: 600;
         }
 
         .button-group {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
+            gap: 15px;
+            margin: 25px 0;
             flex-wrap: wrap;
         }
 
         button {
-            background-color: #3498db;
-            color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 5px;
+            padding: 14px 28px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             transition: all 0.3s ease;
             min-width: 200px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        button:hover {
+        /* Botones principales con diferentes colores */
+        .btn-primary {
+            background-color: #fcc919;
+            color: #333;
+        }
+
+        .btn-primary:hover {
+            background-color: #f0bd0a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(252, 201, 25, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #5d6d7e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4a5a6a;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: #28b463;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #239b56;
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-info:hover {
             background-color: #2980b9;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        button.secondary {
-            background-color: #7f8c8d;
-        }
-
-        button.secondary:hover {
-            background-color: #636e72;
-        }
-
-        button.success {
-            background-color: #27ae60;
-        }
-
-        button.success:hover {
-            background-color: #219653;
-        }
-
-        button.warning {
+        .btn-warning {
             background-color: #e67e22;
+            color: white;
         }
 
-        button.warning:hover {
+        .btn-warning:hover {
             background-color: #d35400;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
         }
 
         .hidden {
@@ -102,28 +147,30 @@
         .table-container {
             overflow-x: auto;
             margin: 20px 0;
+            border: 1px solid #eee;
+            border-radius: 6px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 0;
         }
 
         th, td {
-            padding: 12px;
+            padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
         }
 
         th {
             background-color: #f8f9fa;
-            font-weight: bold;
-            color: #2c3e50;
+            font-weight: 600;
+            color: #333;
         }
 
         tr:hover {
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
         }
 
         input {
@@ -132,12 +179,13 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            transition: border 0.3s;
         }
 
         input:focus {
             outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            border-color: #fcc919;
+            box-shadow: 0 0 0 2px rgba(252, 201, 25, 0.2);
         }
 
         .file-input-container {
@@ -147,17 +195,17 @@
 
         .file-input-label {
             display: inline-block;
-            background-color: #27ae60;
+            background-color: #5d6d7e;
             color: white;
             padding: 12px 24px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             transition: background-color 0.3s;
         }
 
         .file-input-label:hover {
-            background-color: #219653;
+            background-color: #4a5a6a;
         }
 
         #fileInput {
@@ -166,28 +214,28 @@
 
         .instructions {
             background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid #fcc919;
             padding: 15px;
             margin: 20px 0;
-            border-radius: 0 5px 5px 0;
+            border-radius: 0 6px 6px 0;
         }
 
         .instructions h3 {
             margin-top: 0;
             text-align: left;
+            color: #444;
         }
 
         .preview-container {
-            border: 1px solid #ddd;
+            border: 1px solid #eee;
             padding: 20px;
             margin: 20px 0;
-            border-radius: 5px;
+            border-radius: 6px;
             background-color: white;
         }
 
         .label-preview {
             display: inline-block;
-            border: 1px dashed #ccc;
             margin: 5px;
             vertical-align: top;
             page-break-inside: avoid;
@@ -202,52 +250,72 @@
             justify-content: space-between;
             align-items: center;
             padding: 5px;
-            font-size: 8px;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            position: relative;
+            left: -2.5cm;
+        }
+
+        .stone-label-content {
+            transform: rotate(90deg);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .furniture-label {
-            width: 6cm;
-            height: 4cm;
+            width: 20.32cm;
+            height: 12.865cm;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            font-size: 14px;
-            text-align: center;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 0.5cm;
+            border-bottom: 1px dashed #ccc;
+            position: relative;
         }
 
         .barcode-container {
-            width: 100%;
             text-align: center;
-            margin-bottom: 5px;
+            margin: 0.3cm 0;
         }
 
         .label-name {
             font-weight: bold;
-            text-align: center;
+            text-align: left;
             word-break: break-word;
             width: 100%;
+            margin-bottom: 0.5cm;
+            font-weight: 700;
         }
 
         .label-clave {
-            font-size: 12px;
-            margin: 5px 0;
+            font-size: 16px;
+            margin: 0.2cm 0;
+            text-align: center;
+            font-weight: 600;
         }
 
         .label-pieces {
-            font-size: 11px;
+            font-size: 14px;
             color: #666;
-            margin-top: 5px;
+            position: absolute;
+            right: 0.5cm;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 600;
         }
 
         .asterisk {
             color: red;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 20px;
             position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 0.5cm;
+            left: 0.5cm;
         }
 
         .label-with-asterisk {
@@ -257,9 +325,13 @@
         .controls {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 25px;
             flex-wrap: wrap;
             gap: 10px;
+        }
+
+        .controls button {
+            min-width: 150px;
         }
 
         .step-indicator {
@@ -273,12 +345,47 @@
             background-color: #ecf0f1;
             margin: 0 5px;
             border-radius: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            color: #666;
         }
 
         .step.active {
-            background-color: #3498db;
-            color: white;
+            background-color: #fcc919;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .data-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .stone-barcode-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .stone-barcode-svg {
+            transform: rotate(90deg);
+            margin: 10px 0;
+        }
+
+        .stone-name {
+            font-weight: bold;
+            text-align: center;
+            word-break: break-word;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        .stone-clave-text {
+            font-size: 9px;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: 600;
         }
 
         @media print {
@@ -309,24 +416,34 @@
             
             .controls {
                 flex-direction: column;
+                align-items: center;
+            }
+            
+            .controls button {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .stone-label {
+                left: -1.5cm;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Sistema de Generación de Etiquetas</h1>
+        <h1>🏷️ Sistema de Generación de Etiquetas</h1>
         
         <!-- Pantalla principal -->
         <div id="mainScreen">
             <h2>Seleccione el tipo de etiquetas a generar</h2>
             <div class="button-group">
-                <button id="stoneBtn">1. Etiquetas para Placas de Piedra</button>
-                <button id="furnitureBtn">2. Etiquetas para Muebles</button>
+                <button id="stoneBtn" class="btn-primary">1. Etiquetas para Placas de Piedra</button>
+                <button id="furnitureBtn" class="btn-info">2. Etiquetas para Muebles</button>
             </div>
             
             <div class="instructions">
-                <h3>Instrucciones:</h3>
+                <h3>📋 Instrucciones:</h3>
                 <p>1. Seleccione el tipo de etiquetas que desea generar.</p>
                 <p>2. Puede pegar datos directamente desde Excel manteniendo el orden de columnas.</p>
                 <p>3. También puede importar un archivo Excel para autocompletar la tabla.</p>
@@ -340,18 +457,19 @@
                 <div class="step active">Placas de Piedra</div>
             </div>
             
-            <h2>Etiquetas para Placas de Piedra</h2>
+            <h2>🏔️ Etiquetas para Placas de Piedra</h2>
             
             <div class="instructions">
-                <h3>Especificaciones:</h3>
+                <h3>📏 Especificaciones:</h3>
                 <p>- Tamaño de etiqueta: 7.43 cm (alto) × 1.31 cm (ancho)</p>
-                <p>- Cada etiqueta mostrará código de barras arriba y nombre abajo</p>
+                <p>- Texto en orientación vertical</p>
+                <p>- Cada etiqueta mostrará código de barras, clave y nombre</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, Cantidad</p>
             </div>
             
             <div class="file-input-container">
                 <label for="stoneFileInput" class="file-input-label">
-                    Importar datos desde Excel
+                    📁 Importar datos desde Excel
                 </label>
                 <input type="file" id="stoneFileInput" accept=".xlsx,.xls,.csv">
             </div>
@@ -371,20 +489,20 @@
                             <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
                             <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
                             <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                            <td><button class="secondary remove-row">Eliminar</button></td>
+                            <td><button class="btn-danger remove-row">Eliminar</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="controls">
-                <button id="addStoneRow">+ Agregar Fila</button>
-                <button id="generateStoneLabels" class="success">Generar Etiquetas</button>
-                <button id="backFromStone" class="secondary">Volver al Inicio</button>
+                <button id="addStoneRow" class="btn-success">+ Agregar Fila</button>
+                <button id="generateStoneLabels" class="btn-primary">Generar Etiquetas</button>
+                <button id="backFromStone" class="btn-secondary">← Volver al Inicio</button>
             </div>
             
             <div id="stonePreview" class="preview-container hidden">
-                <h3>Vista Previa de Etiquetas</h3>
+                <h3>👁️ Vista Previa de Etiquetas</h3>
                 <div id="stonePreviewContainer"></div>
             </div>
         </div>
@@ -395,13 +513,13 @@
                 <div class="step active">Muebles → Tipo de Etiqueta</div>
             </div>
             
-            <h2>Etiquetas para Muebles</h2>
+            <h2>🛋️ Etiquetas para Muebles</h2>
             <p>Seleccione el tipo de etiqueta:</p>
             
             <div class="button-group">
-                <button id="withKeyBtn">a) Etiquetas con Clave</button>
-                <button id="withoutKeyBtn">b) Etiquetas sin Clave</button>
-                <button id="backFromFurnitureKey" class="secondary">Volver</button>
+                <button id="withKeyBtn" class="btn-primary">a) Etiquetas con Clave</button>
+                <button id="withoutKeyBtn" class="btn-warning">b) Etiquetas sin Clave</button>
+                <button id="backFromFurnitureKey" class="btn-secondary">← Volver</button>
             </div>
         </div>
         
@@ -412,13 +530,13 @@
                 <div class="step active">→ Varias/Una Pieza</div>
             </div>
             
-            <h2 id="furnitureTypeTitle">Etiquetas para Muebles</h2>
+            <h2 id="furnitureTypeTitle">🛋️ Etiquetas para Muebles</h2>
             <p>¿Desea etiquetas para varias piezas o una pieza?</p>
             
             <div class="button-group">
-                <button id="multiplePiecesBtn">Varias Piezas</button>
-                <button id="singlePieceBtn">Una Pieza</button>
-                <button id="backFromFurniturePieces" class="secondary">Volver</button>
+                <button id="multiplePiecesBtn" class="btn-success">Varias Piezas</button>
+                <button id="singlePieceBtn" class="btn-info">Una Pieza</button>
+                <button id="backFromFurniturePieces" class="btn-secondary">← Volver</button>
             </div>
         </div>
         
@@ -429,10 +547,10 @@
                 <div class="step active">→ Varias Piezas</div>
             </div>
             
-            <h2>Etiquetas para Muebles (Con Clave - Varias Piezas)</h2>
+            <h2>🏷️ Etiquetas para Muebles (Con Clave - Varias Piezas)</h2>
             
             <div class="instructions">
-                <h3>Instrucciones:</h3>
+                <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- La primera etiqueta de cada artículo incluirá un * para indicar pieza principal</p>
                 <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
@@ -441,7 +559,7 @@
             
             <div class="file-input-container">
                 <label for="furnitureFileInput" class="file-input-label">
-                    Importar datos desde Excel
+                    📁 Importar datos desde Excel
                 </label>
                 <input type="file" id="furnitureFileInput" accept=".xlsx,.xls,.csv">
             </div>
@@ -463,20 +581,20 @@
                             <td><input type="text" class="furniture-nombre" placeholder="Ej: Cama King Size"></td>
                             <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
                             <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
-                            <td><button class="secondary remove-row">Eliminar</button></td>
+                            <td><button class="btn-danger remove-row">Eliminar</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="controls">
-                <button id="addFurnitureWithKeyMultipleRow">+ Agregar Fila</button>
-                <button id="generateFurnitureWithKeyMultiple" class="success">Generar Etiquetas</button>
-                <button id="backFromFurnitureWithKeyMultiple" class="secondary">Volver</button>
+                <button id="addFurnitureWithKeyMultipleRow" class="btn-success">+ Agregar Fila</button>
+                <button id="generateFurnitureWithKeyMultiple" class="btn-primary">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithKeyMultiple" class="btn-secondary">← Volver</button>
             </div>
             
             <div id="furnitureWithKeyMultiplePreview" class="preview-container hidden">
-                <h3>Vista Previa de Etiquetas</h3>
+                <h3>👁️ Vista Previa de Etiquetas</h3>
                 <div id="furnitureWithKeyMultiplePreviewContainer"></div>
             </div>
         </div>
@@ -488,10 +606,10 @@
                 <div class="step active">→ Una Pieza</div>
             </div>
             
-            <h2>Etiquetas para Muebles (Con Clave - Una Pieza)</h2>
+            <h2>🏷️ Etiquetas para Muebles (Con Clave - Una Pieza)</h2>
             
             <div class="instructions">
-                <h3>Instrucciones:</h3>
+                <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Cada etiqueta incluirá: Nombre, Clave y Código de Barras</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, N° Etiquetas</p>
@@ -499,7 +617,7 @@
             
             <div class="file-input-container">
                 <label for="furnitureSingleFileInput" class="file-input-label">
-                    Importar datos desde Excel
+                    📁 Importar datos desde Excel
                 </label>
                 <input type="file" id="furnitureSingleFileInput" accept=".xlsx,.xls,.csv">
             </div>
@@ -519,20 +637,20 @@
                             <td><input type="text" class="furniture-clave-single" placeholder="Ej: MUEBLE001"></td>
                             <td><input type="text" class="furniture-nombre-single" placeholder="Ej: Cama King Size"></td>
                             <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
-                            <td><button class="secondary remove-row">Eliminar</button></td>
+                            <td><button class="btn-danger remove-row">Eliminar</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="controls">
-                <button id="addFurnitureWithKeySingleRow">+ Agregar Fila</button>
-                <button id="generateFurnitureWithKeySingle" class="success">Generar Etiquetas</button>
-                <button id="backFromFurnitureWithKeySingle" class="secondary">Volver</button>
+                <button id="addFurnitureWithKeySingleRow" class="btn-success">+ Agregar Fila</button>
+                <button id="generateFurnitureWithKeySingle" class="btn-primary">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithKeySingle" class="btn-secondary">← Volver</button>
             </div>
             
             <div id="furnitureWithKeySinglePreview" class="preview-container hidden">
-                <h3>Vista Previa de Etiquetas</h3>
+                <h3>👁️ Vista Previa de Etiquetas</h3>
                 <div id="furnitureWithKeySinglePreviewContainer"></div>
             </div>
         </div>
@@ -544,10 +662,10 @@
                 <div class="step active">→ Varias Piezas</div>
             </div>
             
-            <h2>Etiquetas para Muebles (Sin Clave - Varias Piezas)</h2>
+            <h2>🏷️ Etiquetas para Muebles (Sin Clave - Varias Piezas)</h2>
             
             <div class="instructions">
-                <h3>Instrucciones:</h3>
+                <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
                 <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas, N° Piezas</p>
@@ -555,7 +673,7 @@
             
             <div class="file-input-container">
                 <label for="furnitureWithoutKeyFileInput" class="file-input-label">
-                    Importar datos desde Excel
+                    📁 Importar datos desde Excel
                 </label>
                 <input type="file" id="furnitureWithoutKeyFileInput" accept=".xlsx,.xls,.csv">
             </div>
@@ -575,20 +693,20 @@
                             <td><input type="text" class="furniture-nombre-nokey" placeholder="Ej: Cama King Size"></td>
                             <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
                             <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
-                            <td><button class="secondary remove-row">Eliminar</button></td>
+                            <td><button class="btn-danger remove-row">Eliminar</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="controls">
-                <button id="addFurnitureWithoutKeyMultipleRow">+ Agregar Fila</button>
-                <button id="generateFurnitureWithoutKeyMultiple" class="success">Generar Etiquetas</button>
-                <button id="backFromFurnitureWithoutKeyMultiple" class="secondary">Volver</button>
+                <button id="addFurnitureWithoutKeyMultipleRow" class="btn-success">+ Agregar Fila</button>
+                <button id="generateFurnitureWithoutKeyMultiple" class="btn-warning">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithoutKeyMultiple" class="btn-secondary">← Volver</button>
             </div>
             
             <div id="furnitureWithoutKeyMultiplePreview" class="preview-container hidden">
-                <h3>Vista Previa de Etiquetas</h3>
+                <h3>👁️ Vista Previa de Etiquetas</h3>
                 <div id="furnitureWithoutKeyMultiplePreviewContainer"></div>
             </div>
         </div>
@@ -600,10 +718,10 @@
                 <div class="step active">→ Una Pieza</div>
             </div>
             
-            <h2>Etiquetas para Muebles (Sin Clave - Una Pieza)</h2>
+            <h2>🏷️ Etiquetas para Muebles (Sin Clave - Una Pieza)</h2>
             
             <div class="instructions">
-                <h3>Instrucciones:</h3>
+                <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Cada etiqueta incluirá solo el nombre del artículo</p>
                 <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas</p>
@@ -611,7 +729,7 @@
             
             <div class="file-input-container">
                 <label for="furnitureWithoutKeySingleFileInput" class="file-input-label">
-                    Importar datos desde Excel
+                    📁 Importar datos desde Excel
                 </label>
                 <input type="file" id="furnitureWithoutKeySingleFileInput" accept=".xlsx,.xls,.csv">
             </div>
@@ -629,20 +747,20 @@
                         <tr>
                             <td><input type="text" class="furniture-nombre-nokey-single" placeholder="Ej: Cama King Size"></td>
                             <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
-                            <td><button class="secondary remove-row">Eliminar</button></td>
+                            <td><button class="btn-danger remove-row">Eliminar</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
             <div class="controls">
-                <button id="addFurnitureWithoutKeySingleRow">+ Agregar Fila</button>
-                <button id="generateFurnitureWithoutKeySingle" class="success">Generar Etiquetas</button>
-                <button id="backFromFurnitureWithoutKeySingle" class="secondary">Volver</button>
+                <button id="addFurnitureWithoutKeySingleRow" class="btn-success">+ Agregar Fila</button>
+                <button id="generateFurnitureWithoutKeySingle" class="btn-warning">Generar Etiquetas</button>
+                <button id="backFromFurnitureWithoutKeySingle" class="btn-secondary">← Volver</button>
             </div>
             
             <div id="furnitureWithoutKeySinglePreview" class="preview-container hidden">
-                <h3>Vista Previa de Etiquetas</h3>
+                <h3>👁️ Vista Previa de Etiquetas</h3>
                 <div id="furnitureWithoutKeySinglePreviewContainer"></div>
             </div>
         </div>
@@ -650,8 +768,8 @@
 
     <script>
         // Variables globales
-        let currentFurnitureType = ''; // 'withKey' o 'withoutKey'
-        let currentPiecesType = ''; // 'multiple' o 'single'
+        let currentFurnitureType = '';
+        let currentPiecesType = '';
         
         // Inicialización de eventos
         document.addEventListener('DOMContentLoaded', function() {
@@ -736,7 +854,7 @@
             hideAllScreens();
             document.getElementById('furniturePiecesScreen').classList.remove('hidden');
             document.getElementById('furnitureTypeTitle').textContent = 
-                type === 'withKey' ? 'Etiquetas para Muebles (Con Clave)' : 'Etiquetas para Muebles (Sin Clave)';
+                type === 'withKey' ? '🛋️ Etiquetas para Muebles (Con Clave)' : '🛋️ Etiquetas para Muebles (Sin Clave)';
         }
         
         function showFurniturePiecesScreenFromSubscreen() {
@@ -793,7 +911,7 @@
                 <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
                 <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
                 <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                <td><button class="secondary remove-row">Eliminar</button></td>
+                <td><button class="btn-danger remove-row">Eliminar</button></td>
             `;
             tbody.appendChild(newRow);
         }
@@ -810,7 +928,7 @@
                         <td><input type="text" class="furniture-nombre" placeholder="Ej: Cama King Size"></td>
                         <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     `;
                     break;
                 case 'withKeySingle':
@@ -819,7 +937,7 @@
                         <td><input type="text" class="furniture-clave-single" placeholder="Ej: MUEBLE001"></td>
                         <td><input type="text" class="furniture-nombre-single" placeholder="Ej: Cama King Size"></td>
                         <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     `;
                     break;
                 case 'withoutKeyMultiple':
@@ -828,7 +946,7 @@
                         <td><input type="text" class="furniture-nombre-nokey" placeholder="Ej: Cama King Size"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     `;
                     break;
                 case 'withoutKeySingle':
@@ -836,7 +954,7 @@
                     html = `
                         <td><input type="text" class="furniture-nombre-nokey-single" placeholder="Ej: Cama King Size"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     `;
                     break;
             }
@@ -857,7 +975,6 @@
                 const clipboardData = event.clipboardData || window.clipboardData;
                 const pastedData = clipboardData.getData('Text');
                 
-                // Determinar en qué pantalla estamos
                 let screen = '';
                 if (!document.getElementById('stoneScreen').classList.contains('hidden')) {
                     screen = 'stone';
@@ -880,9 +997,9 @@
         function processPastedData(data, screen) {
             const rows = data.split('\n').filter(row => row.trim() !== '');
             
-            // Limpiar tabla existente (excepto la primera fila)
             let tbody;
             let rowTemplate;
+            let columns;
             
             switch(screen) {
                 case 'stone':
@@ -891,8 +1008,9 @@
                         <td><input type="text" class="stone-clave"></td>
                         <td><input type="text" class="stone-nombre"></td>
                         <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
+                    columns = 3;
                     break;
                 case 'furnitureWithKeyMultiple':
                     tbody = document.getElementById('furnitureWithKeyMultipleBody');
@@ -901,8 +1019,9 @@
                         <td><input type="text" class="furniture-nombre"></td>
                         <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
+                    columns = 4;
                     break;
                 case 'furnitureWithKeySingle':
                     tbody = document.getElementById('furnitureWithKeySingleBody');
@@ -910,8 +1029,9 @@
                         <td><input type="text" class="furniture-clave-single"></td>
                         <td><input type="text" class="furniture-nombre-single"></td>
                         <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
+                    columns = 3;
                     break;
                 case 'furnitureWithoutKeyMultiple':
                     tbody = document.getElementById('furnitureWithoutKeyMultipleBody');
@@ -919,16 +1039,18 @@
                         <td><input type="text" class="furniture-nombre-nokey"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
+                    columns = 3;
                     break;
                 case 'furnitureWithoutKeySingle':
                     tbody = document.getElementById('furnitureWithoutKeySingleBody');
                     rowTemplate = `<tr>
                         <td><input type="text" class="furniture-nombre-nokey-single"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
+                    columns = 2;
                     break;
             }
             
@@ -993,7 +1115,6 @@
         }
         
         function processImportedData(data, type) {
-            // Filtrar filas vacías
             const rows = data.filter(row => row.some(cell => cell !== null && cell !== ''));
             
             let tbody;
@@ -1007,7 +1128,7 @@
                         <td><input type="text" class="stone-clave"></td>
                         <td><input type="text" class="stone-nombre"></td>
                         <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
                     columnCount = 3;
                     break;
@@ -1018,7 +1139,7 @@
                         <td><input type="text" class="furniture-nombre"></td>
                         <td><input type="number" class="furniture-etiquetas" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
                     columnCount = 4;
                     break;
@@ -1028,7 +1149,7 @@
                         <td><input type="text" class="furniture-clave-single"></td>
                         <td><input type="text" class="furniture-nombre-single"></td>
                         <td><input type="number" class="furniture-etiquetas-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
                     columnCount = 3;
                     break;
@@ -1038,7 +1159,7 @@
                         <td><input type="text" class="furniture-nombre-nokey"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey" min="1" value="1"></td>
                         <td><input type="number" class="furniture-piezas-nokey" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
                     columnCount = 3;
                     break;
@@ -1047,21 +1168,18 @@
                     rowTemplate = `<tr>
                         <td><input type="text" class="furniture-nombre-nokey-single"></td>
                         <td><input type="number" class="furniture-etiquetas-nokey-single" min="1" value="1"></td>
-                        <td><button class="secondary remove-row">Eliminar</button></td>
+                        <td><button class="btn-danger remove-row">Eliminar</button></td>
                     </tr>`;
                     columnCount = 2;
                     break;
             }
             
-            // Limpiar tabla (dejar solo la primera fila)
             while (tbody.children.length > 1) {
                 tbody.removeChild(tbody.lastChild);
             }
             
-            // Procesar datos
             rows.forEach((row, rowIndex) => {
                 if (rowIndex === 0) {
-                    // Primera fila
                     const firstRow = tbody.children[0];
                     const inputs = firstRow.querySelectorAll('input');
                     
@@ -1071,7 +1189,6 @@
                         }
                     });
                 } else {
-                    // Filas adicionales
                     const newRow = document.createElement('tr');
                     newRow.innerHTML = rowTemplate;
                     tbody.appendChild(newRow);
@@ -1085,7 +1202,7 @@
                 }
             });
             
-            event.target.value = ''; // Resetear input de archivo
+            event.target.value = '';
         }
         
         // Función para generar etiquetas de piedra
@@ -1110,10 +1227,7 @@
                 return;
             }
             
-            // Mostrar vista previa
             showStonePreview(labels);
-            
-            // Generar PDF
             generateStonePDF(labels);
         }
         
@@ -1124,21 +1238,25 @@
             labels.forEach((label, index) => {
                 const labelDiv = document.createElement('div');
                 labelDiv.className = 'label-preview stone-label';
-                labelDiv.innerHTML = `
-                    <div class="barcode-container">
-                        <svg class="barcode"></svg>
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'stone-label-content';
+                contentDiv.innerHTML = `
+                    <div class="stone-barcode-container">
+                        <svg class="stone-barcode"></svg>
+                        <div class="stone-clave-text"><strong>${label.clave}</strong></div>
                     </div>
-                    <div class="label-name">${label.nombre}</div>
+                    <div class="stone-name"><strong>${label.nombre}</strong></div>
                 `;
+                labelDiv.appendChild(contentDiv);
                 container.appendChild(labelDiv);
                 
-                // Generar código de barras
                 setTimeout(() => {
-                    JsBarcode(`.barcode:eq(${index})`, `*${label.clave}*`, {
+                    JsBarcode(`.stone-barcode:eq(${index})`, `*${label.clave}*`, {
                         format: "CODE128",
                         lineColor: "#000",
-                        width: 1,
-                        height: 30,
+                        width: 0.5,
+                        height: 20,
                         displayValue: false
                     });
                 }, 100);
@@ -1155,28 +1273,29 @@
                 format: 'letter'
             });
             
-            // Configuración para hoja carta (21.59cm x 27.94cm)
             const pageWidth = 21.59;
             const pageHeight = 27.94;
-            
-            // Tamaño de etiqueta
             const labelWidth = 1.31;
             const labelHeight = 7.43;
             
-            // Margenes
-            const marginX = 0.5;
-            const marginY = 0.5;
+            // Margenes de impresión para etiquetas pequeñas
+            const marginLeft = 0.64;
+            const marginRight = 0.64;
+            const marginTop = 1.15;
+            const marginBottom = 1.15;
             
-            // Calcular cuántas etiquetas caben por fila y columna
-            const labelsPerRow = Math.floor((pageWidth - 2 * marginX) / labelWidth);
-            const labelsPerColumn = Math.floor((pageHeight - 2 * marginY) / labelHeight);
+            const availableWidth = pageWidth - marginLeft - marginRight;
+            const availableHeight = pageHeight - marginTop - marginBottom;
             
-            let currentX = marginX;
-            let currentY = marginY;
+            const labelsPerRow = Math.floor(availableWidth / labelWidth);
+            const labelsPerColumn = Math.floor(availableHeight / labelHeight);
+            
+            let currentX = marginLeft;
+            let currentY = marginTop;
             let labelIndex = 0;
             
-            // Configurar fuente
             doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
             
             for (let row = 0; row < labelsPerColumn; row++) {
                 for (let col = 0; col < labelsPerRow; col++) {
@@ -1188,47 +1307,72 @@
                     doc.setDrawColor(200, 200, 200);
                     doc.setLineWidth(0.01);
                     
-                    // Crear bordes punteados manualmente
                     const dashLength = 0.1;
                     const gapLength = 0.1;
                     
-                    // Línea superior
                     drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                    // Línea derecha
                     drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    // Línea inferior
                     drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    // Línea izquierda
                     drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
                     
-                    // Calcular posición para código de barras y texto
-                    const barcodeY = currentY + 0.5;
-                    const textY = currentY + labelHeight - 1;
+                    // Guardar estado actual
+                    doc.saveGraphicsState();
                     
-                    // Agregar código de barras (usaremos texto que puede ser convertido por impresora)
-                    doc.setFontSize(8);
-                    doc.setTextColor(0, 0, 0);
-                    doc.text(`*${label.clave}*`, currentX + labelWidth/2, barcodeY, { align: 'center' });
+                    // Rotar el contenido 90 grados
+                    doc.rotate(90, currentX + labelWidth/2, currentY + labelHeight/2);
+                    
+                    // Calcular posición rotada
+                    const rotatedX = currentY + labelHeight/2 - labelWidth/2;
+                    const rotatedY = -(currentX + labelWidth/2 - labelHeight/2);
+                    
+                    // Agregar código de barras (texto)
+                    const barcodeText = `*${label.clave}*`;
+                    doc.setFontSize(6);
+                    doc.text(barcodeText, rotatedX + 0.2, rotatedY - 0.5);
+                    
+                    // Agregar clave
+                    doc.setFontSize(6);
+                    doc.text(label.clave, rotatedX + 0.2, rotatedY + 0.2);
                     
                     // Agregar nombre
-                    doc.setFontSize(7);
-                    doc.text(label.nombre, currentX + labelWidth/2, textY, { align: 'center', maxWidth: labelWidth - 0.2 });
+                    doc.setFontSize(6);
+                    doc.setFont(undefined, 'bold');
+                    
+                    // Calcular tamaño de fuente automático para el nombre
+                    const maxNameWidth = labelHeight - 1;
+                    const maxNameHeight = labelWidth - 1;
+                    let fontSize = 6;
+                    let textWidth;
+                    
+                    do {
+                        doc.setFontSize(fontSize);
+                        textWidth = doc.getTextWidth(label.nombre);
+                        if (textWidth > maxNameWidth && fontSize > 4) {
+                            fontSize -= 0.5;
+                        } else {
+                            break;
+                        }
+                    } while (textWidth > maxNameWidth && fontSize > 4);
+                    
+                    doc.text(label.nombre, rotatedX + 0.2, rotatedY + 1.0, { maxWidth: maxNameWidth });
+                    
+                    // Restaurar estado
+                    doc.restoreGraphicsState();
                     
                     currentX += labelWidth;
                     labelIndex++;
                 }
                 
-                currentX = marginX;
+                currentX = marginLeft;
                 currentY += labelHeight;
                 
                 if (labelIndex >= labels.length) break;
             }
             
-            // Si hay más etiquetas, agregar nuevas páginas
             while (labelIndex < labels.length) {
                 doc.addPage();
-                currentX = marginX;
-                currentY = marginY;
+                currentX = marginLeft;
+                currentY = marginTop;
                 
                 for (let row = 0; row < labelsPerColumn; row++) {
                     for (let col = 0; col < labelsPerRow; col++) {
@@ -1236,48 +1380,63 @@
                         
                         const label = labels[labelIndex];
                         
-                        // Dibujar borde punteado
                         doc.setDrawColor(200, 200, 200);
                         doc.setLineWidth(0.01);
                         
-                        // Crear bordes punteados manualmente
                         const dashLength = 0.1;
                         const gapLength = 0.1;
                         
-                        // Línea superior
                         drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                        // Línea derecha
                         drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        // Línea inferior
                         drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        // Línea izquierda
                         drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
                         
-                        // Calcular posición para código de barras y texto
-                        const barcodeY = currentY + 0.5;
-                        const textY = currentY + labelHeight - 1;
+                        doc.saveGraphicsState();
+                        doc.rotate(90, currentX + labelWidth/2, currentY + labelHeight/2);
                         
-                        // Agregar código de barras
-                        doc.setFontSize(8);
-                        doc.setTextColor(0, 0, 0);
-                        doc.text(`*${label.clave}*`, currentX + labelWidth/2, barcodeY, { align: 'center' });
+                        const rotatedX = currentY + labelHeight/2 - labelWidth/2;
+                        const rotatedY = -(currentX + labelWidth/2 - labelHeight/2);
                         
-                        // Agregar nombre
-                        doc.setFontSize(7);
-                        doc.text(label.nombre, currentX + labelWidth/2, textY, { align: 'center', maxWidth: labelWidth - 0.2 });
+                        const barcodeText = `*${label.clave}*`;
+                        doc.setFontSize(6);
+                        doc.text(barcodeText, rotatedX + 0.2, rotatedY - 0.5);
+                        
+                        doc.setFontSize(6);
+                        doc.text(label.clave, rotatedX + 0.2, rotatedY + 0.2);
+                        
+                        doc.setFontSize(6);
+                        doc.setFont(undefined, 'bold');
+                        
+                        const maxNameWidth = labelHeight - 1;
+                        const maxNameHeight = labelWidth - 1;
+                        let fontSize = 6;
+                        let textWidth;
+                        
+                        do {
+                            doc.setFontSize(fontSize);
+                            textWidth = doc.getTextWidth(label.nombre);
+                            if (textWidth > maxNameWidth && fontSize > 4) {
+                                fontSize -= 0.5;
+                            } else {
+                                break;
+                            }
+                        } while (textWidth > maxNameWidth && fontSize > 4);
+                        
+                        doc.text(label.nombre, rotatedX + 0.2, rotatedY + 1.0, { maxWidth: maxNameWidth });
+                        
+                        doc.restoreGraphicsState();
                         
                         currentX += labelWidth;
                         labelIndex++;
                     }
                     
-                    currentX = marginX;
+                    currentX = marginLeft;
                     currentY += labelHeight;
                     
                     if (labelIndex >= labels.length) break;
                 }
             }
             
-            // Guardar PDF
             doc.save('etiquetas_placas_piedra.pdf');
         }
         
@@ -1473,33 +1632,34 @@
                 
                 let html = '';
                 
-                if (label.tieneAsterisko) {
+                if (label.tieneAsterisco) {
                     html += '<div class="asterisk">*</div>';
                     labelDiv.classList.add('label-with-asterisk');
                 }
                 
-                html += `<div class="label-name">${label.nombre}</div>`;
+                html += `<div class="label-name"><strong>${label.nombre}</strong></div>`;
                 
                 if (label.tieneClave) {
-                    html += `<div class="label-clave">${label.clave}</div>`;
-                    html += '<div class="barcode-container"><svg class="barcode"></svg></div>';
+                    html += '<div class="barcode-container">';
+                    html += '<svg class="barcode"></svg>';
+                    html += `<div class="label-clave"><strong>${label.clave}</strong></div>`;
+                    html += '</div>';
                 }
                 
                 if (label.tienePiezas) {
-                    html += `<div class="label-pieces">Pieza ${label.piezaActual} de ${label.totalPiezas}</div>`;
+                    html += `<div class="label-pieces"><strong>${label.piezaActual} de ${label.totalPiezas}</strong></div>`;
                 }
                 
                 labelDiv.innerHTML = html;
                 container.appendChild(labelDiv);
                 
-                // Generar código de barras si es necesario
                 if (label.tieneClave) {
                     setTimeout(() => {
                         JsBarcode(`.barcode:eq(${index})`, `*${label.clave}*`, {
                             format: "CODE128",
                             lineColor: "#000",
                             width: 1,
-                            height: 40,
+                            height: 30,
                             displayValue: false
                         });
                     }, 100);
@@ -1515,178 +1675,120 @@
                 format: 'letter'
             });
             
-            // Configuración para hoja carta
+            // Configuración de márgenes para media hoja
+            const marginLeft = 0.64;
+            const marginRight = 0.64;
+            const marginTop = 1.15;
+            const marginBottom = 1.15;
+            
             const pageWidth = 21.59;
             const pageHeight = 27.94;
             
-            // Tamaño de etiqueta para muebles (más grande)
-            const labelWidth = 6;
-            const labelHeight = 4;
+            // Espacio disponible para etiquetas
+            const availableWidth = pageWidth - marginLeft - marginRight;
+            const availableHeight = pageHeight - marginTop - marginBottom;
             
-            // Margenes
-            const marginX = 1;
-            const marginY = 1;
+            // Dos etiquetas por hoja (media hoja cada una)
+            const labelWidth = availableWidth;
+            const labelHeight = availableHeight / 2;
             
-            // Calcular cuántas etiquetas caben por fila y columna
-            const labelsPerRow = Math.floor((pageWidth - 2 * marginX) / labelWidth);
-            const labelsPerColumn = Math.floor((pageHeight - 2 * marginY) / labelHeight);
-            
-            let currentX = marginX;
-            let currentY = marginY;
+            let currentY = marginTop;
             let labelIndex = 0;
             
-            // Configurar fuente
             doc.setFont("helvetica", "normal");
             
-            for (let row = 0; row < labelsPerColumn; row++) {
-                for (let col = 0; col < labelsPerRow; col++) {
-                    if (labelIndex >= labels.length) break;
-                    
-                    const label = labels[labelIndex];
-                    
-                    // Dibujar borde punteado
+            while (labelIndex < labels.length) {
+                // Verificar si necesitamos nueva página
+                if (labelIndex > 0 && labelIndex % 2 === 0) {
+                    doc.addPage();
+                    currentY = marginTop;
+                }
+                
+                const label = labels[labelIndex];
+                
+                // Solo dibujar línea punteada en la mitad de la página (entre etiquetas)
+                if (labelIndex % 2 === 1) {
                     doc.setDrawColor(200, 200, 200);
                     doc.setLineWidth(0.01);
                     
-                    // Crear bordes punteados manualmente
                     const dashLength = 0.2;
                     const gapLength = 0.2;
                     
-                    // Línea superior
-                    drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                    // Línea derecha
-                    drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    // Línea inferior
-                    drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                    // Línea izquierda
-                    drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
-                    
-                    // Calcular posiciones
-                    let currentTextY = currentY + 0.5;
-                    
-                    // Agregar asterisco si corresponde
-                    if (label.tieneAsterisko) {
-                        doc.setFontSize(12);
-                        doc.setTextColor(255, 0, 0);
-                        doc.text('*', currentX + 0.3, currentTextY);
-                        currentTextY += 0.5;
+                    // Línea punteada horizontal en el medio
+                    const lineY = marginTop + labelHeight;
+                    drawDashedLine(doc, marginLeft, lineY, marginLeft + labelWidth, lineY, dashLength, gapLength);
+                }
+                
+                // Posición actual para esta etiqueta
+                const currentX = marginLeft;
+                
+                // Área para el nombre (parte superior)
+                const nameAreaHeight = labelHeight * 0.4;
+                const nameAreaWidth = labelWidth * 0.8;
+                const nameX = currentX + (labelWidth - nameAreaWidth) / 2;
+                const nameY = currentY + 0.5;
+                
+                // Área para código de barras y piezas (parte inferior)
+                const barcodeAreaHeight = labelHeight * 0.4;
+                const barcodeAreaWidth = labelWidth * 0.6;
+                const barcodeX = currentX + (labelWidth - barcodeAreaWidth) / 2;
+                const barcodeY = currentY + nameAreaHeight + 0.5;
+                
+                // Calcular tamaño de fuente para el nombre
+                doc.setFont(undefined, 'bold');
+                let fontSize = 24;
+                let textWidth;
+                
+                do {
+                    doc.setFontSize(fontSize);
+                    textWidth = doc.getTextWidth(label.nombre);
+                    if (textWidth > nameAreaWidth && fontSize > 8) {
+                        fontSize -= 0.5;
+                    } else {
+                        break;
                     }
-                    
-                    // Agregar nombre (texto más grande)
-                    doc.setFontSize(12);
+                } while (textWidth > nameAreaWidth && fontSize > 8);
+                
+                // Dibujar nombre
+                doc.setFontSize(fontSize);
+                doc.text(label.nombre, nameX + nameAreaWidth/2, nameY, { align: 'center', maxWidth: nameAreaWidth });
+                
+                // Dibujar asterisco si corresponde
+                if (label.tieneAsterisco) {
+                    doc.setFontSize(20);
+                    doc.setTextColor(255, 0, 0);
+                    doc.text('*', currentX + 0.5, currentY + 0.5);
                     doc.setTextColor(0, 0, 0);
-                    doc.text(label.nombre, currentX + labelWidth/2, currentTextY, { 
-                        align: 'center', 
-                        maxWidth: labelWidth - 0.5 
-                    });
-                    currentTextY += 0.8;
-                    
-                    // Agregar clave si corresponde
-                    if (label.tieneClave) {
-                        doc.setFontSize(10);
-                        doc.text(label.clave, currentX + labelWidth/2, currentTextY, { align: 'center' });
-                        currentTextY += 0.6;
-                        
-                        // Agregar código de barras (texto para conversión)
-                        doc.setFontSize(8);
-                        doc.text(`*${label.clave}*`, currentX + labelWidth/2, currentTextY, { align: 'center' });
-                        currentTextY += 0.6;
-                    }
-                    
-                    // Agregar información de piezas si corresponde
-                    if (label.tienePiezas) {
-                        doc.setFontSize(10);
-                        doc.text(`Pieza ${label.piezaActual} de ${label.totalPiezas}`, 
-                                currentX + labelWidth/2, currentTextY, { align: 'center' });
-                    }
-                    
-                    currentX += labelWidth;
-                    labelIndex++;
                 }
                 
-                currentX = marginX;
-                currentY += labelHeight;
-                
-                if (labelIndex >= labels.length) break;
-            }
-            
-            // Si hay más etiquetas, agregar nuevas páginas
-            while (labelIndex < labels.length) {
-                doc.addPage();
-                currentX = marginX;
-                currentY = marginY;
-                
-                for (let row = 0; row < labelsPerColumn; row++) {
-                    for (let col = 0; col < labelsPerRow; col++) {
-                        if (labelIndex >= labels.length) break;
-                        
-                        const label = labels[labelIndex];
-                        
-                        // Dibujar borde punteado
-                        doc.setDrawColor(200, 200, 200);
-                        doc.setLineWidth(0.01);
-                        
-                        // Crear bordes punteados manualmente
-                        const dashLength = 0.2;
-                        const gapLength = 0.2;
-                        
-                        // Línea superior
-                        drawDashedLine(doc, currentX, currentY, currentX + labelWidth, currentY, dashLength, gapLength);
-                        // Línea derecha
-                        drawDashedLine(doc, currentX + labelWidth, currentY, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        // Línea inferior
-                        drawDashedLine(doc, currentX, currentY + labelHeight, currentX + labelWidth, currentY + labelHeight, dashLength, gapLength);
-                        // Línea izquierda
-                        drawDashedLine(doc, currentX, currentY, currentX, currentY + labelHeight, dashLength, gapLength);
-                        
-                        // Calcular posiciones
-                        let currentTextY = currentY + 0.5;
-                        
-                        // Agregar asterisco si corresponde
-                        if (label.tieneAsterisko) {
-                            doc.setFontSize(12);
-                            doc.setTextColor(255, 0, 0);
-                            doc.text('*', currentX + 0.3, currentTextY);
-                            currentTextY += 0.5;
-                        }
-                        
-                        // Agregar nombre (texto más grande)
-                        doc.setFontSize(12);
-                        doc.setTextColor(0, 0, 0);
-                        doc.text(label.nombre, currentX + labelWidth/2, currentTextY, { 
-                            align: 'center', 
-                            maxWidth: labelWidth - 0.5 
-                        });
-                        currentTextY += 0.8;
-                        
-                        // Agregar clave si corresponde
-                        if (label.tieneClave) {
-                            doc.setFontSize(10);
-                            doc.text(label.clave, currentX + labelWidth/2, currentTextY, { align: 'center' });
-                            currentTextY += 0.6;
-                            
-                            // Agregar código de barras (texto para conversión)
-                            doc.setFontSize(8);
-                            doc.text(`*${label.clave}*`, currentX + labelWidth/2, currentTextY, { align: 'center' });
-                            currentTextY += 0.6;
-                        }
-                        
-                        // Agregar información de piezas si corresponde
-                        if (label.tienePiezas) {
-                            doc.setFontSize(10);
-                            doc.text(`Pieza ${label.piezaActual} de ${label.totalPiezas}`, 
-                                    currentX + labelWidth/2, currentTextY, { align: 'center' });
-                        }
-                        
-                        currentX += labelWidth;
-                        labelIndex++;
-                    }
+                // Dibujar código de barras y clave si corresponde
+                if (label.tieneClave) {
+                    // Código de barras (texto para impresora)
+                    doc.setFontSize(10);
+                    doc.text(`*${label.clave}*`, barcodeX + barcodeAreaWidth/2, barcodeY + 1.0, { align: 'center' });
                     
-                    currentX = marginX;
+                    // Clave
+                    doc.setFontSize(12);
+                    doc.text(label.clave, barcodeX + barcodeAreaWidth/2, barcodeY + 1.8, { align: 'center' });
+                }
+                
+                // Dibujar información de piezas si corresponde
+                if (label.tienePiezas) {
+                    doc.setFontSize(12);
+                    const piecesText = `${label.piezaActual} de ${label.totalPiezas}`;
+                    doc.text(piecesText, currentX + labelWidth - 1.0, barcodeY + 1.0, { align: 'right' });
+                }
+                
+                // Preparar para siguiente etiqueta
+                if (labelIndex % 2 === 0) {
+                    // Primera etiqueta de la página, mover hacia abajo para la segunda
                     currentY += labelHeight;
-                    
-                    if (labelIndex >= labels.length) break;
+                } else {
+                    // Segunda etiqueta de la página, resetear para nueva página
+                    currentY = marginTop;
                 }
+                
+                labelIndex++;
             }
             
             // Guardar PDF con nombre apropiado
