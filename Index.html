@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Agregar ExcelJS para estilos avanzados -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -337,7 +339,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏷️ Sistema de Generación de Etiquetas</h1>
+        <h1>Sistema de Generación de Etiquetas</h1>
         
         <!-- Pantalla principal -->
         <div id="mainScreen">
@@ -350,9 +352,8 @@
             <div class="instructions">
                 <h3>📋 Instrucciones:</h3>
                 <p>1. Seleccione el tipo de etiquetas que desea generar.</p>
-                <p>2. Puede pegar datos directamente desde Excel manteniendo el orden de columnas.</p>
-                <p>3. También puede importar un archivo Excel para autocompletar la tabla.</p>
-                <p>4. Las etiquetas se generarán en formato PDF listo para imprimir.</p>
+                <p>2. Puede importar un archivo Excel para autocompletar la tabla.</p>
+                <p>3. Las etiquetas se generarán en formato PDF listo para imprimir.</p>
             </div>
         </div>
         
@@ -367,14 +368,18 @@
                 <button id="homeFromStone" class="btn-secondary">🏠 Inicio</button>
             </div>
             
-            <h2>🏔️ Etiquetas para Placas de Piedra</h2>
+            <h2>Etiquetas para Placas de Piedra</h2>
             
             <div class="instructions">
                 <h3>📏 Especificaciones:</h3>
-                <p>- Se generará archivo Excel con 14 columnas (A a N)</p>
-                <p>- Cada etiqueta ocupa 2 filas: clave arriba, nombre abajo</p>
-                <p>- Formato similar a la macro existente</p>
-                <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, Cantidad</p>
+                <p>- Se generará archivo Excel con las etiquetas listas para imprimirse</p>
+                <p>- Es necesario tener instalada la tipografía IDAutomationHC39M Free Version</p>
+                <p>- La tipografía anterior puede descargarse en el siguiente link: </p>
+                <a href="https://drive.google.com/file/d/12J78IkOtgKD5DSkM-WHMhcCYBgvz5nRP/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
+                    Descargar tipografía
+                </a>
+                <p>- Se puede exportar un archivo de Excel con los datos para generar las etiquetas</p>
+                <p>- El archivo de Excel de entrada debe respetar las columnas de Clave, Nombre y Cantidad</p>
             </div>
             
             <div class="file-input-container">
@@ -422,7 +427,7 @@
                 <button id="homeFromFurnitureKey" class="btn-secondary">🏠 Inicio</button>
             </div>
             
-            <h2>🛋️ Etiquetas para Muebles</h2>
+            <h2>Etiquetas para Muebles</h2>
             <p>Seleccione el tipo de etiqueta:</p>
             
             <div class="button-group">
@@ -443,7 +448,7 @@
                 <button id="homeFromFurniturePieces" class="btn-secondary">🏠 Inicio</button>
             </div>
             
-            <h2 id="furnitureTypeTitle">🛋️ Etiquetas para Muebles</h2>
+            <h2 id="furnitureTypeTitle">Etiquetas para Muebles</h2>
             <p>¿Desea etiquetas para varias piezas o una pieza?</p>
             
             <div class="button-group">
@@ -1169,7 +1174,7 @@
             event.target.value = '';
         }
         
-        // Función para generar etiquetas de piedra (ahora genera Excel)
+        // Función para generar etiquetas de piedra (Excel)
         function generateStoneLabels() {
             const rows = document.querySelectorAll('#stoneTableBody tr');
             const labels = [];
@@ -1194,148 +1199,148 @@
             generateStoneExcel(labels);
         }
         
-        // Función para generar Excel para etiquetas de piedra (similar a la macro)
-        function generateStoneExcel(labels) {
-            // Crear un nuevo libro de trabajo
-            const wb = XLSX.utils.book_new();
-            wb.Props = {
-                Title: "Etiquetas para Placas de Piedra",
-                Subject: "Etiquetas generadas desde sistema web",
-                Author: "Sistema de Generación de Etiquetas",
-                CreatedDate: new Date()
-            };
-            
-            // Crear hoja para etiquetas
-            const wsData = [];
-            
-            // Inicializar posición (14 columnas: A a N)
-            let filaDestino = 0; // 0-based para XLSX
-            let columnaDestino = 0; // 0-based (A=0, B=1, ..., N=13)
-            
-            // Recorrer todas las etiquetas
-            labels.forEach(label => {
-                // Fila para clave (en posición actual)
-                const filaClave = filaDestino;
-                const filaNombre = filaDestino + 1;
+        // Función para generar Excel para etiquetas de piedra CON ESTILOS COMPLETOS
+        async function generateStoneExcel(labels) {
+            try {
+                // Crear un nuevo libro de trabajo con ExcelJS
+                const workbook = new ExcelJS.Workbook();
+                workbook.creator = 'Sistema de Generación de Etiquetas';
+                workbook.created = new Date();
                 
-                // Asegurarse de que existan las filas necesarias
-                while (wsData.length <= filaNombre) {
-                    wsData.push(new Array(14).fill(''));
+                // Agregar una hoja
+                const worksheet = workbook.addWorksheet('Etiquetas para placas');
+                
+                // ========== CONFIGURACIÓN DE MÁRGENES Y DISEÑO DE PÁGINA ==========
+                worksheet.pageSetup = {
+                    paperSize: 1,               // Carta
+                    orientation: 'portrait',    // portrait | landscape
+                    margins: {
+                        top: 1.27 / 2.54,
+                        bottom: 1.27 / 2.54,
+                        left: 0.64 / 2.54,
+                        right: 0.64 / 2.54,
+                        header: 0.76 / 2.54,
+                        footer: 0.76 / 2.54
+                    }
+                };
+
+                
+                // ========== CONFIGURAR ANCHO DE COLUMNAS ==========
+                // 14 columnas (A a N) con ancho de 1.38 cm
+                // En ExcelJS, el ancho se mide en caracteres. 1.38 cm ≈ 15 caracteres
+                for (let i = 1; i <= 14; i++) {
+                    worksheet.getColumn(i).width = 6.89; // 1.38 cm aproximadamente
                 }
                 
-                // Asignar valores (similar a la macro)
-                wsData[filaClave][columnaDestino] = "*" + label.clave + "*";
-                wsData[filaNombre][columnaDestino] = label.nombre;
+                // ========== PROCESAR ETIQUETAS ==========
+                let currentRow = 1;
+                let currentCol = 1;
                 
-                // Avanzar columna
-                columnaDestino++;
-                
-                // Si llegamos a la columna N (índice 13), pasar a la siguiente fila
-                if (columnaDestino > 13) { // 0-13 son 14 columnas
-                    columnaDestino = 0;
-                    filaDestino += 2; // Avanzar 2 filas (clave + nombre)
-                }
-            });
-            
-            // Crear la hoja de trabajo
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            // Ajustar anchos de columnas (aproximadamente)
-            const colWidths = [];
-            for (let i = 0; i < 14; i++) {
-                colWidths.push({ wch: 15 }); // Ancho aproximado para cada columna
-            }
-            ws['!cols'] = colWidths;
-            
-            // Agregar hoja al libro
-            XLSX.utils.book_append_sheet(wb, ws, "Etiquetas para hoja carta");
-            
-            // Crear hoja de origen (opcional)
-            const wsOrigenData = [
-                ["Clave de la Placa", "Nombre de la Placa", "Cantidad de Etiquetas"]
-            ];
-            
-            // Agrupar datos originales
-            const originalData = {};
-            document.querySelectorAll('#stoneTableBody tr').forEach(row => {
-                const clave = row.querySelector('.stone-clave').value.trim();
-                const nombre = row.querySelector('.stone-nombre').value.trim();
-                const cantidad = parseInt(row.querySelector('.stone-cantidad').value) || 0;
-                
-                if (clave && nombre && cantidad > 0) {
-                    wsOrigenData.push([clave, nombre, cantidad]);
-                }
-            });
-            
-            const wsOrigen = XLSX.utils.aoa_to_sheet(wsOrigenData);
-            XLSX.utils.book_append_sheet(wb, wsOrigen, "Lista de articulos");
-            
-            // Generar archivo Excel
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
-            
-            // Descargar archivo
-            function s2ab(s) {
-                const buf = new ArrayBuffer(s.length);
-                const view = new Uint8Array(buf);
-                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-                return buf;
-            }
-            
-            const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "etiquetas_placas_piedra.xlsx";
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 0);
-            
-            alert('Archivo Excel generado correctamente. Abra el archivo y ejecute la macro para aplicar formato.');
-        }
-        
-        // Función para crear código de barras como imagen - SIN ASTERISCOS
-        function createBarcodeImage(text) {
-            return new Promise((resolve, reject) => {
-                try {
-                    // Crear canvas temporal
-                    const canvas = document.getElementById('barcodeCanvas');
-                    const ctx = canvas.getContext('2d');
+                // Recorrer todas las etiquetas
+                for (const label of labels) {
+                    // ========== FILA IMPAR (CLAVE - CÓDIGO DE BARRAS) ==========
+                    const oddRow = worksheet.getRow(currentRow);
                     
-                    // Limpiar canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // Configurar alto de fila: 3.75 cm ≈ 106 puntos
+                    oddRow.height = 133.14;
                     
-                    // Generar código de barras SIN asteriscos
-                    JsBarcode(canvas, text, {
-                        format: "CODE128",
-                        lineColor: "#000000",
-                        width: 1,
-                        height: 30,
-                        displayValue: false,
-                        margin: 0
-                    });
+                    // Configurar celda para clave
+                    const claveCell = oddRow.getCell(currentCol);
+                    claveCell.value = "*" + label.clave + "*"; // Formato para código de barras
                     
-                    // Convertir a data URL
-                    const dataUrl = canvas.toDataURL('image/png');
-                    
-                    // Crear objeto Image
-                    const img = new Image();
-                    img.onload = function() {
-                        resolve({
-                            img: img,
-                            dataUrl: dataUrl,
-                            width: canvas.width,
-                            height: canvas.height
-                        });
+                    // Estilo para fila impar: IDAutomationHC39M Free Version, tamaño 8
+                    claveCell.font = {
+                        name: 'IDAutomationHC39M Free Version',
+                        family: 2, // 1=Roman, 2=Swiss, 3=Modern, 4=Script, 5=Decorative
+                        size: 8,
+                        bold: false
                     };
-                    img.onerror = reject;
-                    img.src = dataUrl;
-                } catch (error) {
-                    reject(error);
+                    
+                    // Alineación: texto girado hacia arriba (90 grados)
+                    claveCell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'left',
+                        textRotation: 90, // Girar texto hacia arriba
+                        wrapText: true
+                    };
+                    
+                    // Bordes punteados
+                    claveCell.border = {
+                        top: { style: 'dashed' },
+                        left: { style: 'dashed' },
+                        bottom: { style: 'null' },
+                        right: { style: 'dashed' }
+                    };
+                    
+                    // ========== FILA PAR (NOMBRE) ==========
+                    const evenRow = worksheet.getRow(currentRow + 1);
+                    
+                    // Configurar alto de fila: 3.75 cm ≈ 106 puntos
+                    evenRow.height = 133.14;
+                    
+                    // Configurar celda para nombre
+                    const nombreCell = evenRow.getCell(currentCol);
+                    nombreCell.value = label.nombre;
+                    
+                    // Estilo para fila par: Calibri, tamaño 10, no negritas
+                    nombreCell.font = {
+                        name: 'Calibri',
+                        family: 2,
+                        size: 8,
+                        bold: false
+                    };
+                    
+                    // Alineación: texto girado hacia arriba (90 grados)
+                    nombreCell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'center',
+                        textRotation: 90, // Girar texto hacia arriba
+                        wrapText: true
+                    };
+                    
+                    // Bordes punteados
+                    nombreCell.border = {
+                        top: { style: 'null' },
+                        left: { style: 'dashed' },
+                        bottom: { style: 'dashed' },
+                        right: { style: 'dashed' }
+                    };
+                    
+                    // ========== AVANZAR A LA SIGUIENTE COLUMNA ==========
+                    currentCol++;
+                    
+                    // Si llegamos a la columna N (14), pasar a la siguiente fila doble
+                    if (currentCol > 14) {
+                        currentCol = 1;
+                        currentRow += 2; // Avanzar 2 filas (clave + nombre)
+                    }
                 }
-            });
+                
+                
+                // ========== GENERAR Y DESCARGAR ARCHIVO ==========
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { 
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'etiquetas_placas_piedra.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpiar
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                
+            } catch (error) {
+                console.error('Error al generar Excel:', error);
+                alert('Error al generar el archivo Excel. Verifique la consola para más detalles.');
+            }
         }
         
         // Función para generar etiquetas de muebles
@@ -1473,7 +1478,46 @@
             return labels;
         }
         
-        // NUEVA FUNCIÓN: Dividir texto en líneas que quepan en el ancho disponible, respetando tokens
+        // Función para crear código de barras como imagen
+        function createBarcodeImage(text) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const canvas = document.getElementById('barcodeCanvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Limpiar canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Generar código de barras (sin asteriscos)
+                    JsBarcode(canvas, text, {
+                        format: "CODE128",
+                        lineColor: "#000000",
+                        width: 1,
+                        height: 30,
+                        displayValue: false,
+                        margin: 0
+                    });
+                    
+                    const dataUrl = canvas.toDataURL('image/png');
+                    
+                    const img = new Image();
+                    img.onload = function() {
+                        resolve({
+                            img: img,
+                            dataUrl: dataUrl,
+                            width: canvas.width,
+                            height: canvas.height
+                        });
+                    };
+                    img.onerror = reject;
+                    img.src = dataUrl;
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+        
+        // Función para dividir texto en líneas que quepan en el ancho disponible, respetando tokens
         function splitTextIntoLines(doc, text, maxWidth, fontSize) {
             doc.setFontSize(fontSize);
             const words = text.split(' ');
@@ -1486,16 +1530,13 @@
                 const testWidth = doc.getTextWidth(testLine);
                 
                 if (testWidth > maxWidth && currentLine !== '') {
-                    // La línea actual está llena, guardarla y empezar nueva línea con esta palabra
                     lines.push(currentLine);
                     currentLine = word;
                 } else {
-                    // La palabra cabe en la línea actual
                     currentLine = testLine;
                 }
             }
             
-            // Añadir la última línea
             if (currentLine !== '') {
                 lines.push(currentLine);
             }
@@ -1528,13 +1569,13 @@
             const labelWidth = availableWidth;
             const labelHeight = availableHeight / 2;
             
-            // Porcentajes de la altura de la etiqueta - SIN ASTERISCO, ESPACIO ASIGNADO AL NOMBRE
+            // Porcentajes de la altura de la etiqueta
             const percentages = {
                 blanco: 18.24,
                 piezas: 4.05,
                 barcode: 2.94,
                 clave: 0.95,
-                nombre: 73.83 // 69.78% + 4.05% (del asterisco eliminado)
+                nombre: 73.83
             };
             
             // Convertir porcentajes a alturas en cm
@@ -1566,7 +1607,7 @@
                 let nombreHeight = sectionHeights.nombre;
                 let currentY = labelY + sectionHeights.blanco / 2;
                 
-                // 1. Nombre (con el tamaño de fuente configurado) - CON TODO EL ESPACIO DISPONIBLE
+                // 1. Nombre (con el tamaño de fuente configurado)
                 const nombreY = currentY + nombreHeight / 2;
                 
                 // Calcular tamaño de fuente ajustado
@@ -1574,26 +1615,22 @@
                 doc.setFont(undefined, 'bold');
                 
                 // Dividir texto en líneas si es necesario
-                const maxWidth = labelWidth * 0.9; // 90% del ancho disponible
+                const maxWidth = labelWidth * 0.9;
                 let lines = [];
                 
-                // Usar la nueva función que respeta tokens
                 lines = splitTextIntoLines(doc, label.nombre, maxWidth, actualFontSize);
                 
                 // Si hay más líneas de las que caben en el espacio vertical, reducir tamaño de fuente
-                const lineHeight = actualFontSize * 0.035; // Aproximadamente en cm
+                const lineHeight = actualFontSize * 0.035;
                 const maxLines = Math.floor(nombreHeight / lineHeight);
                 
-                // Si no caben todas las líneas, reducir el tamaño de fuente
                 if (lines.length > maxLines && maxLines > 0) {
-                    // Calcular nuevo tamaño de fuente basado en líneas necesarias vs espacio disponible
                     const neededHeight = lines.length * lineHeight;
-                    const availableHeightForText = nombreHeight * 0.9; // 90% del espacio para texto
+                    const availableHeightForText = nombreHeight * 0.9;
                     const scaleFactor = availableHeightForText / neededHeight;
                     
                     actualFontSize = Math.max(8, Math.floor(actualFontSize * scaleFactor));
                     
-                    // Recalcular líneas con nuevo tamaño
                     doc.setFontSize(actualFontSize);
                     lines = splitTextIntoLines(doc, label.nombre, maxWidth, actualFontSize);
                 }
@@ -1615,17 +1652,15 @@
                 
                 currentY += nombreHeight;
                 
-                // 2. Código de barras y clave (si tiene) - SIN ASTERISCOS
+                // 2. Código de barras y clave (si tiene)
                 if (hasKey) {
                     try {
-                        // Crear código de barras como imagen (sin asteriscos)
                         const barcodeData = await createBarcodeImage(label.clave);
                         
                         const barcodeY = currentY + sectionHeights.barcode / 2;
-                        const barcodeWidth = 5; // cm
-                        const barcodeHeight = 1; // cm
+                        const barcodeWidth = 5;
+                        const barcodeHeight = 1;
                         
-                        // Posicionar código de barras (centrado)
                         const barcodeX = marginLeft + (labelWidth - barcodeWidth) / 2;
                         doc.addImage(
                             barcodeData.dataUrl, 
@@ -1637,7 +1672,6 @@
                         );
                         currentY += sectionHeights.barcode;
                         
-                        // 3. Clave (debajo del código de barras)
                         const claveY = 1.3 + currentY + sectionHeights.clave / 2;
                         doc.setFontSize(12);
                         doc.setFont(undefined, 'bold');
@@ -1645,7 +1679,6 @@
                         currentY += sectionHeights.clave;
                     } catch (error) {
                         console.error('Error generando código de barras:', error);
-                        // Si falla, usar texto como fallback (sin asteriscos)
                         const barcodeY = currentY + sectionHeights.barcode / 2;
                         doc.setFontSize(8);
                         doc.setFont(undefined, 'normal');
@@ -1660,12 +1693,12 @@
                     }
                 }
                 
-                // 4. Piezas (al lado del código de barras, si tiene)
+                // 3. Piezas (al lado del código de barras, si tiene)
                 if (hasPieces) {
                     const piecesY = labelY + sectionHeights.blanco / 2 + nombreHeight + sectionHeights.barcode / 2;
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    const piecesText = `${label.piezaActual} de ${label.totalPiezas}`;
+                    const piecesText = `(${label.piezaActual} de ${label.totalPiezas})`;
                     doc.text(piecesText, marginLeft + labelWidth - 1.0, piecesY, { align: 'right' });
                 }
                 
