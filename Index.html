@@ -372,7 +372,7 @@
             <div class="instructions">
                 <h3>📏 Especificaciones:</h3>
                 <p>- Tamaño de etiqueta: 7.43 cm (alto) × 1.31 cm (ancho)</p>
-                <p>- Texto en orientación vertical</p>
+                <p>- Texto en orientación horizontal con giro de 90°</p>
                 <p>- Cada etiqueta mostrará código de barras, clave y nombre</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, Cantidad</p>
             </div>
@@ -1191,7 +1191,7 @@
             generateStonePDF(labels);
         }
         
-        // Función para crear código de barras como imagen (sin rotación)
+        // Función para crear código de barras como imagen - MODIFICADA PARA ELIMINAR ASTERISCOS
         function createBarcodeImage(text) {
             return new Promise((resolve, reject) => {
                 try {
@@ -1202,14 +1202,18 @@
                     // Limpiar canvas
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    // Generar código de barras
+                    // Generar código de barras SIN caracteres de inicio/fin
+                    // CODE128 por defecto no agrega asteriscos si no se los damos
                     JsBarcode(canvas, text, {
                         format: "CODE128",
                         lineColor: "#000000",
                         width: 1,
                         height: 30,
                         displayValue: false,
-                        margin: 0
+                        margin: 0,
+                        // Configuración para evitar caracteres de control
+                        startChar: false,
+                        endChar: false
                     });
                     
                     // Convertir a data URL
@@ -1233,7 +1237,7 @@
             });
         }
         
-        // Función para generar etiquetas de piedra (sin rotación)
+        // Función para generar etiquetas de piedra - MODIFICADA PARA ORIENTACIÓN HORIZONTAL CON GIRO DE 90°
         function generateStonePDF(labels) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
@@ -1244,8 +1248,8 @@
             
             const pageWidth = 21.59;
             const pageHeight = 27.94;
-            const labelWidth = 1.31;
-            const labelHeight = 7.43;
+            const labelWidth = 7.43; // Cambiado: ahora es el alto original
+            const labelHeight = 1.31; // Cambiado: ahora es el ancho original
             
             // Margenes de impresión para etiquetas pequeñas
             const marginLeft = 0.64;
@@ -1278,16 +1282,16 @@
                     const y = marginTop + row * labelHeight;
                     
                     try {
-                        // Crear código de barras como imagen
-                        const barcodeData = await createBarcodeImage(`*${label.clave}*`);
+                        // Crear código de barras como imagen (sin asteriscos)
+                        const barcodeData = await createBarcodeImage(label.clave);
                         
-                        // Calcular tamaño para el código de barras (ajustado para etiqueta vertical)
-                        const barcodeImgWidth = 0.8; // cm
-                        const barcodeImgHeight = 4.0; // cm
+                        // Tamaño para el código de barras en orientación horizontal
+                        const barcodeImgWidth = 6.0; // cm (más ancho para orientación horizontal)
+                        const barcodeImgHeight = 0.5; // cm (más bajo para orientación horizontal)
                         
-                        // Posicionar código de barras (centrado horizontalmente)
+                        // Posicionar código de barras en la parte superior de la etiqueta
                         const barcodeX = x + (labelWidth - barcodeImgWidth) / 2;
-                        const barcodeY = y + 0.3;
+                        const barcodeY = y + 0.1;
                         
                         // Agregar código de barras (sin rotación)
                         doc.addImage(
@@ -1299,34 +1303,46 @@
                             barcodeImgHeight
                         );
                         
-                        // Agregar clave (debajo del código de barras)
-                        const claveY = barcodeY + barcodeImgHeight + 0.2;
-                        doc.setFontSize(6);
+                        // Agregar clave debajo del código de barras
+                        doc.setFontSize(8);
                         doc.setFont(undefined, 'bold');
+                        const claveX = x + labelWidth / 2;
+                        const claveY = barcodeY + barcodeImgHeight + 0.3;
+                        doc.text(label.clave, claveX, claveY, { align: 'center' });
                         
-                        // Dividir clave en caracteres individuales (texto vertical)
-                        const claveChars = label.clave.split('');
-                        const charSpacing = 0.35; // cm entre caracteres
+                        // Agregar nombre debajo de la clave
+                        doc.setFontSize(6);
+                        // Calcular si el nombre cabe en una línea
+                        const nombreMaxWidth = labelWidth - 0.4; // Margen de 0.2 cm a cada lado
+                        let nombreLines = [label.nombre];
                         
-                        for (let j = 0; j < claveChars.length; j++) {
-                            const charX = x + labelWidth / 2;
-                            const charY = claveY + (j * charSpacing);
-                            doc.text(claveChars[j], charX, charY, { align: 'center' });
+                        // Si el nombre es muy largo, dividirlo en dos líneas
+                        if (doc.getTextWidth(label.nombre) > nombreMaxWidth) {
+                            const middle = Math.floor(label.nombre.length / 2);
+                            // Buscar un espacio cerca del medio para dividir
+                            let splitIndex = middle;
+                            for (let j = 0; j < 10; j++) {
+                                if (label.nombre[middle + j] === ' ') {
+                                    splitIndex = middle + j;
+                                    break;
+                                }
+                                if (label.nombre[middle - j] === ' ') {
+                                    splitIndex = middle - j;
+                                    break;
+                                }
+                            }
+                            nombreLines = [
+                                label.nombre.substring(0, splitIndex),
+                                label.nombre.substring(splitIndex + 1)
+                            ];
                         }
                         
-                        // Agregar nombre (debajo de la clave)
-                        const nombreStartY = claveY + (claveChars.length * charSpacing) + 0.3;
-                        doc.setFontSize(5);
-                        
-                        // Dividir nombre en caracteres individuales
-                        const nombreChars = label.nombre.split('');
-                        const nombreCharSpacing = 0.25; // cm entre caracteres
-                        
-                        for (let j = 0; j < nombreChars.length; j++) {
-                            const charX = x + labelWidth / 2;
-                            const charY = nombreStartY + (j * nombreCharSpacing);
-                            doc.text(nombreChars[j], charX, charY, { align: 'center' });
-                        }
+                        // Dibujar el nombre (una o dos líneas)
+                        const nombreStartY = claveY + 0.4;
+                        nombreLines.forEach((line, index) => {
+                            const nombreY = nombreStartY + (index * 0.3);
+                            doc.text(line, x + labelWidth / 2, nombreY, { align: 'center' });
+                        });
                         
                         // Dibujar bordes punteados
                         doc.setDrawColor(200, 200, 200);
@@ -1649,11 +1665,11 @@
                 
                 currentY += nombreHeight;
                 
-                // 3. Código de barras y clave (si tiene)
+                // 3. Código de barras y clave (si tiene) - MODIFICADO PARA ELIMINAR ASTERISCOS
                 if (hasKey) {
                     try {
-                        // Crear código de barras como imagen
-                        const barcodeData = await createBarcodeImage(`*${label.clave}*`);
+                        // Crear código de barras como imagen (sin asteriscos)
+                        const barcodeData = await createBarcodeImage(label.clave);
                         
                         const barcodeY = currentY + sectionHeights.barcode / 2;
                         const barcodeWidth = 5; // cm
@@ -1679,11 +1695,11 @@
                         currentY += sectionHeights.clave;
                     } catch (error) {
                         console.error('Error generando código de barras:', error);
-                        // Si falla, usar texto como fallback
+                        // Si falla, usar texto como fallback (sin asteriscos)
                         const barcodeY = currentY + sectionHeights.barcode / 2;
                         doc.setFontSize(8);
                         doc.setFont(undefined, 'normal');
-                        doc.text(`*${label.clave}*`, marginLeft + labelWidth / 2, barcodeY, { align: 'center' });
+                        doc.text(label.clave, marginLeft + labelWidth / 2, barcodeY, { align: 'center' });
                         currentY += sectionHeights.barcode;
                         
                         const claveY = currentY + sectionHeights.clave / 2;
