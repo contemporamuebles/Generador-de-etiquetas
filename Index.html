@@ -371,9 +371,9 @@
             
             <div class="instructions">
                 <h3>📏 Especificaciones:</h3>
-                <p>- Tamaño de etiqueta: 7.43 cm (alto) × 1.31 cm (ancho)</p>
-                <p>- Texto en orientación horizontal con giro de 90°</p>
-                <p>- Cada etiqueta mostrará código de barras, clave y nombre</p>
+                <p>- Se generará archivo Excel con 14 columnas (A a N)</p>
+                <p>- Cada etiqueta ocupa 2 filas: clave arriba, nombre abajo</p>
+                <p>- Formato similar a la macro existente</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, Cantidad</p>
             </div>
             
@@ -407,7 +407,7 @@
             
             <div class="controls">
                 <button id="addStoneRow" class="btn-success">+ Agregar Fila</button>
-                <button id="generateStoneLabels" class="btn-primary">Generar Etiquetas</button>
+                <button id="generateStoneLabels" class="btn-primary">Generar Etiquetas (Excel)</button>
             </div>
         </div>
         
@@ -474,8 +474,8 @@
             <div class="instructions">
                 <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
-                <p>- La primera etiqueta de cada artículo incluirá un * para indicar pieza principal</p>
                 <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
+                <p>- El nombre se dividirá automáticamente en líneas si no cabe</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, N° Etiquetas, N° Piezas</p>
             </div>
             
@@ -538,6 +538,7 @@
                 <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Cada etiqueta incluirá: Nombre, Clave y Código de Barras</p>
+                <p>- El nombre se dividirá automáticamente en líneas si no cabe</p>
                 <p>- Puede pegar datos desde Excel en el orden: Clave, Nombre, N° Etiquetas</p>
             </div>
             
@@ -598,6 +599,7 @@
                 <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Se generará el recuento de piezas (Ej: 1 de 3, 2 de 3, 3 de 3)</p>
+                <p>- El nombre se dividirá automáticamente en líneas si no cabe</p>
                 <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas, N° Piezas</p>
             </div>
             
@@ -658,6 +660,7 @@
                 <h3>📋 Instrucciones:</h3>
                 <p>- Complete la tabla con los datos requeridos</p>
                 <p>- Cada etiqueta incluirá solo el nombre del artículo</p>
+                <p>- El nombre se dividirá automáticamente en líneas si no cabe</p>
                 <p>- Puede pegar datos desde Excel en el orden: Nombre, N° Etiquetas</p>
             </div>
             
@@ -1166,7 +1169,7 @@
             event.target.value = '';
         }
         
-        // Función para generar etiquetas de piedra
+        // Función para generar etiquetas de piedra (ahora genera Excel)
         function generateStoneLabels() {
             const rows = document.querySelectorAll('#stoneTableBody tr');
             const labels = [];
@@ -1188,10 +1191,112 @@
                 return;
             }
             
-            generateStonePDF(labels);
+            generateStoneExcel(labels);
         }
         
-        // Función para crear código de barras como imagen - MODIFICADA PARA ELIMINAR ASTERISCOS
+        // Función para generar Excel para etiquetas de piedra (similar a la macro)
+        function generateStoneExcel(labels) {
+            // Crear un nuevo libro de trabajo
+            const wb = XLSX.utils.book_new();
+            wb.Props = {
+                Title: "Etiquetas para Placas de Piedra",
+                Subject: "Etiquetas generadas desde sistema web",
+                Author: "Sistema de Generación de Etiquetas",
+                CreatedDate: new Date()
+            };
+            
+            // Crear hoja para etiquetas
+            const wsData = [];
+            
+            // Inicializar posición (14 columnas: A a N)
+            let filaDestino = 0; // 0-based para XLSX
+            let columnaDestino = 0; // 0-based (A=0, B=1, ..., N=13)
+            
+            // Recorrer todas las etiquetas
+            labels.forEach(label => {
+                // Fila para clave (en posición actual)
+                const filaClave = filaDestino;
+                const filaNombre = filaDestino + 1;
+                
+                // Asegurarse de que existan las filas necesarias
+                while (wsData.length <= filaNombre) {
+                    wsData.push(new Array(14).fill(''));
+                }
+                
+                // Asignar valores (similar a la macro)
+                wsData[filaClave][columnaDestino] = "*" + label.clave + "*";
+                wsData[filaNombre][columnaDestino] = label.nombre;
+                
+                // Avanzar columna
+                columnaDestino++;
+                
+                // Si llegamos a la columna N (índice 13), pasar a la siguiente fila
+                if (columnaDestino > 13) { // 0-13 son 14 columnas
+                    columnaDestino = 0;
+                    filaDestino += 2; // Avanzar 2 filas (clave + nombre)
+                }
+            });
+            
+            // Crear la hoja de trabajo
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            // Ajustar anchos de columnas (aproximadamente)
+            const colWidths = [];
+            for (let i = 0; i < 14; i++) {
+                colWidths.push({ wch: 15 }); // Ancho aproximado para cada columna
+            }
+            ws['!cols'] = colWidths;
+            
+            // Agregar hoja al libro
+            XLSX.utils.book_append_sheet(wb, ws, "Etiquetas para hoja carta");
+            
+            // Crear hoja de origen (opcional)
+            const wsOrigenData = [
+                ["Clave de la Placa", "Nombre de la Placa", "Cantidad de Etiquetas"]
+            ];
+            
+            // Agrupar datos originales
+            const originalData = {};
+            document.querySelectorAll('#stoneTableBody tr').forEach(row => {
+                const clave = row.querySelector('.stone-clave').value.trim();
+                const nombre = row.querySelector('.stone-nombre').value.trim();
+                const cantidad = parseInt(row.querySelector('.stone-cantidad').value) || 0;
+                
+                if (clave && nombre && cantidad > 0) {
+                    wsOrigenData.push([clave, nombre, cantidad]);
+                }
+            });
+            
+            const wsOrigen = XLSX.utils.aoa_to_sheet(wsOrigenData);
+            XLSX.utils.book_append_sheet(wb, wsOrigen, "Lista de articulos");
+            
+            // Generar archivo Excel
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+            
+            // Descargar archivo
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+            
+            const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "etiquetas_placas_piedra.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+            
+            alert('Archivo Excel generado correctamente. Abra el archivo y ejecute la macro para aplicar formato.');
+        }
+        
+        // Función para crear código de barras como imagen - SIN ASTERISCOS
         function createBarcodeImage(text) {
             return new Promise((resolve, reject) => {
                 try {
@@ -1202,18 +1307,14 @@
                     // Limpiar canvas
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     
-                    // Generar código de barras SIN caracteres de inicio/fin
-                    // CODE128 por defecto no agrega asteriscos si no se los damos
+                    // Generar código de barras SIN asteriscos
                     JsBarcode(canvas, text, {
                         format: "CODE128",
                         lineColor: "#000000",
                         width: 1,
                         height: 30,
                         displayValue: false,
-                        margin: 0,
-                        // Configuración para evitar caracteres de control
-                        startChar: false,
-                        endChar: false
+                        margin: 0
                     });
                     
                     // Convertir a data URL
@@ -1234,152 +1335,6 @@
                 } catch (error) {
                     reject(error);
                 }
-            });
-        }
-        
-        // Función para generar etiquetas de piedra - MODIFICADA PARA ORIENTACIÓN HORIZONTAL CON GIRO DE 90°
-        function generateStonePDF(labels) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'cm',
-                format: 'letter'
-            });
-            
-            const pageWidth = 21.59;
-            const pageHeight = 27.94;
-            const labelWidth = 7.43; // Cambiado: ahora es el alto original
-            const labelHeight = 1.31; // Cambiado: ahora es el ancho original
-            
-            // Margenes de impresión para etiquetas pequeñas
-            const marginLeft = 0.64;
-            const marginRight = 0.64;
-            const marginTop = 1.15;
-            const marginBottom = 1.15;
-            
-            const availableWidth = pageWidth - marginLeft - marginRight;
-            const availableHeight = pageHeight - marginTop - marginBottom;
-            
-            const labelsPerRow = Math.floor(availableWidth / labelWidth);
-            const labelsPerColumn = Math.floor(availableHeight / labelHeight);
-            
-            let currentX = marginLeft;
-            let currentY = marginTop;
-            let labelIndex = 0;
-            
-            doc.setFont("helvetica", "normal");
-            
-            // Procesar en lotes para evitar problemas de memoria
-            const processBatch = async (startIndex, endIndex) => {
-                for (let i = startIndex; i < endIndex && i < labels.length; i++) {
-                    const label = labels[i];
-                    
-                    // Calcular posición
-                    const row = Math.floor((i - startIndex) / labelsPerRow);
-                    const col = (i - startIndex) % labelsPerRow;
-                    
-                    const x = marginLeft + col * labelWidth;
-                    const y = marginTop + row * labelHeight;
-                    
-                    try {
-                        // Crear código de barras como imagen (sin asteriscos)
-                        const barcodeData = await createBarcodeImage(label.clave);
-                        
-                        // Tamaño para el código de barras en orientación horizontal
-                        const barcodeImgWidth = 6.0; // cm (más ancho para orientación horizontal)
-                        const barcodeImgHeight = 0.5; // cm (más bajo para orientación horizontal)
-                        
-                        // Posicionar código de barras en la parte superior de la etiqueta
-                        const barcodeX = x + (labelWidth - barcodeImgWidth) / 2;
-                        const barcodeY = y + 0.1;
-                        
-                        // Agregar código de barras (sin rotación)
-                        doc.addImage(
-                            barcodeData.dataUrl, 
-                            'PNG', 
-                            barcodeX, 
-                            barcodeY, 
-                            barcodeImgWidth, 
-                            barcodeImgHeight
-                        );
-                        
-                        // Agregar clave debajo del código de barras
-                        doc.setFontSize(8);
-                        doc.setFont(undefined, 'bold');
-                        const claveX = x + labelWidth / 2;
-                        const claveY = barcodeY + barcodeImgHeight + 0.3;
-                        doc.text(label.clave, claveX, claveY, { align: 'center' });
-                        
-                        // Agregar nombre debajo de la clave
-                        doc.setFontSize(6);
-                        // Calcular si el nombre cabe en una línea
-                        const nombreMaxWidth = labelWidth - 0.4; // Margen de 0.2 cm a cada lado
-                        let nombreLines = [label.nombre];
-                        
-                        // Si el nombre es muy largo, dividirlo en dos líneas
-                        if (doc.getTextWidth(label.nombre) > nombreMaxWidth) {
-                            const middle = Math.floor(label.nombre.length / 2);
-                            // Buscar un espacio cerca del medio para dividir
-                            let splitIndex = middle;
-                            for (let j = 0; j < 10; j++) {
-                                if (label.nombre[middle + j] === ' ') {
-                                    splitIndex = middle + j;
-                                    break;
-                                }
-                                if (label.nombre[middle - j] === ' ') {
-                                    splitIndex = middle - j;
-                                    break;
-                                }
-                            }
-                            nombreLines = [
-                                label.nombre.substring(0, splitIndex),
-                                label.nombre.substring(splitIndex + 1)
-                            ];
-                        }
-                        
-                        // Dibujar el nombre (una o dos líneas)
-                        const nombreStartY = claveY + 0.4;
-                        nombreLines.forEach((line, index) => {
-                            const nombreY = nombreStartY + (index * 0.3);
-                            doc.text(line, x + labelWidth / 2, nombreY, { align: 'center' });
-                        });
-                        
-                        // Dibujar bordes punteados
-                        doc.setDrawColor(200, 200, 200);
-                        doc.setLineWidth(0.01);
-                        const dashPattern = [0.05, 0.05];
-                        doc.setLineDashPattern(dashPattern, 0);
-                        doc.rect(x, y, labelWidth, labelHeight, 'S');
-                        doc.setLineDashPattern([], 0);
-                        
-                    } catch (error) {
-                        console.error('Error generando código de barras:', error);
-                        // Continuar con la siguiente etiqueta
-                    }
-                }
-            };
-            
-            // Procesar todas las etiquetas
-            const processAllLabels = async () => {
-                const batchSize = labelsPerRow * labelsPerColumn;
-                
-                for (let pageStart = 0; pageStart < labels.length; pageStart += batchSize) {
-                    if (pageStart > 0) {
-                        doc.addPage();
-                        currentX = marginLeft;
-                        currentY = marginTop;
-                    }
-                    
-                    const pageEnd = Math.min(pageStart + batchSize, labels.length);
-                    await processBatch(pageStart, pageEnd);
-                }
-                
-                doc.save('etiquetas_placas_piedra.pdf');
-            };
-            
-            processAllLabels().catch(error => {
-                console.error('Error generando PDF:', error);
-                alert('Error generando el PDF. Por favor, intente nuevamente.');
             });
         }
         
@@ -1429,13 +1384,11 @@
                 if (clave && nombre && etiquetas > 0) {
                     for (let e = 0; e < etiquetas; e++) {
                         for (let p = 1; p <= piezas; p++) {
-                            const isFirstPiece = p === 1;
                             labels.push({
                                 clave,
                                 nombre,
                                 piezaActual: p,
                                 totalPiezas: piezas,
-                                tieneAsterisco: isFirstPiece,
                                 tieneClave: true,
                                 tienePiezas: true
                             });
@@ -1520,26 +1473,33 @@
             return labels;
         }
         
-        // Función para dividir texto en líneas que quepan en el ancho disponible
-        function splitTextToFitWidth(doc, text, maxWidth, fontSize) {
+        // NUEVA FUNCIÓN: Dividir texto en líneas que quepan en el ancho disponible, respetando tokens
+        function splitTextIntoLines(doc, text, maxWidth, fontSize) {
             doc.setFontSize(fontSize);
             const words = text.split(' ');
             const lines = [];
-            let currentLine = words[0];
+            let currentLine = '';
             
-            for (let i = 1; i < words.length; i++) {
+            for (let i = 0; i < words.length; i++) {
                 const word = words[i];
-                const testLine = currentLine + ' ' + word;
+                const testLine = currentLine ? currentLine + ' ' + word : word;
                 const testWidth = doc.getTextWidth(testLine);
                 
-                if (testWidth > maxWidth) {
+                if (testWidth > maxWidth && currentLine !== '') {
+                    // La línea actual está llena, guardarla y empezar nueva línea con esta palabra
                     lines.push(currentLine);
                     currentLine = word;
                 } else {
+                    // La palabra cabe en la línea actual
                     currentLine = testLine;
                 }
             }
-            lines.push(currentLine);
+            
+            // Añadir la última línea
+            if (currentLine !== '') {
+                lines.push(currentLine);
+            }
+            
             return lines;
         }
         
@@ -1568,14 +1528,13 @@
             const labelWidth = availableWidth;
             const labelHeight = availableHeight / 2;
             
-            // Porcentajes de la altura de la etiqueta
+            // Porcentajes de la altura de la etiqueta - SIN ASTERISCO, ESPACIO ASIGNADO AL NOMBRE
             const percentages = {
                 blanco: 18.24,
-                asterisco: 4.05,
                 piezas: 4.05,
                 barcode: 2.94,
                 clave: 0.95,
-                nombre: 69.78
+                nombre: 73.83 // 69.78% + 4.05% (del asterisco eliminado)
             };
             
             // Convertir porcentajes a alturas en cm
@@ -1600,7 +1559,6 @@
                 const label = labels[labelIndex];
                 
                 // Determinar qué elementos tiene la etiqueta
-                const hasAsterisk = label.tieneAsterisco || false;
                 const hasPieces = label.tienePiezas || false;
                 const hasKey = label.tieneClave || false;
                 
@@ -1608,64 +1566,56 @@
                 let nombreHeight = sectionHeights.nombre;
                 let currentY = labelY + sectionHeights.blanco / 2;
                 
-                // 1. Asterisco (si tiene)
-                if (hasAsterisk) {
-                    const asteriscoY = currentY + sectionHeights.asterisco / 2;
-                    doc.setFontSize(14);
-                    doc.setTextColor(255, 0, 0);
-                    doc.text('*', marginLeft + labelWidth / 2, asteriscoY, { align: 'center' });
-                    doc.setTextColor(0, 0, 0);
-                    currentY += sectionHeights.asterisco;
-                } else {
-                    nombreHeight += sectionHeights.asterisco;
-                }
-                
-                // 2. Nombre (con el tamaño de fuente configurado)
+                // 1. Nombre (con el tamaño de fuente configurado) - CON TODO EL ESPACIO DISPONIBLE
                 const nombreY = currentY + nombreHeight / 2;
                 
-                // Calcular tamaño de fuente ajustado para que quepa en el ancho
+                // Calcular tamaño de fuente ajustado
                 let actualFontSize = fontSize;
                 doc.setFont(undefined, 'bold');
                 
                 // Dividir texto en líneas si es necesario
                 const maxWidth = labelWidth * 0.9; // 90% del ancho disponible
                 let lines = [];
-                let lineHeight = 0;
                 
-                // Intentar con el tamaño de fuente configurado
-                doc.setFontSize(actualFontSize);
-                lines = splitTextToFitWidth(doc, label.nombre, maxWidth, actualFontSize);
+                // Usar la nueva función que respeta tokens
+                lines = splitTextIntoLines(doc, label.nombre, maxWidth, actualFontSize);
                 
-                // Si hay más de una línea, ajustar el tamaño de fuente
-                if (lines.length > 1) {
-                    // Reducir tamaño de fuente para intentar que quepa en menos líneas
-                    let reducedFontSize = actualFontSize;
-                    while (reducedFontSize > 8 && lines.length > 1) {
-                        reducedFontSize -= 1;
-                        doc.setFontSize(reducedFontSize);
-                        lines = splitTextToFitWidth(doc, label.nombre, maxWidth, reducedFontSize);
-                    }
-                    actualFontSize = reducedFontSize;
+                // Si hay más líneas de las que caben en el espacio vertical, reducir tamaño de fuente
+                const lineHeight = actualFontSize * 0.035; // Aproximadamente en cm
+                const maxLines = Math.floor(nombreHeight / lineHeight);
+                
+                // Si no caben todas las líneas, reducir el tamaño de fuente
+                if (lines.length > maxLines && maxLines > 0) {
+                    // Calcular nuevo tamaño de fuente basado en líneas necesarias vs espacio disponible
+                    const neededHeight = lines.length * lineHeight;
+                    const availableHeightForText = nombreHeight * 0.9; // 90% del espacio para texto
+                    const scaleFactor = availableHeightForText / neededHeight;
+                    
+                    actualFontSize = Math.max(8, Math.floor(actualFontSize * scaleFactor));
+                    
+                    // Recalcular líneas con nuevo tamaño
+                    doc.setFontSize(actualFontSize);
+                    lines = splitTextIntoLines(doc, label.nombre, maxWidth, actualFontSize);
                 }
                 
-                // Calcular altura total del texto
-                lineHeight = actualFontSize * 0.035; // Aproximadamente en cm
-                const totalTextHeight = lines.length * lineHeight;
+                // Calcular altura total del texto con tamaño final
+                const finalLineHeight = actualFontSize * 0.035;
+                const totalTextHeight = lines.length * finalLineHeight;
                 
-                // Ajustar posición Y para centrar el texto
-                const textStartY = nombreY - (totalTextHeight / 2) + (lineHeight / 2);
+                // Ajustar posición Y para centrar el texto verticalmente
+                const textStartY = nombreY - (totalTextHeight / 2) + (finalLineHeight / 2);
                 
                 // Dibujar cada línea
                 doc.setFontSize(actualFontSize);
                 for (let i = 0; i < lines.length; i++) {
-                    doc.text(lines[i], marginLeft + labelWidth / 2, textStartY + (i * lineHeight), { 
+                    doc.text(lines[i], marginLeft + labelWidth / 2, textStartY + (i * finalLineHeight), { 
                         align: 'center' 
                     });
                 }
                 
                 currentY += nombreHeight;
                 
-                // 3. Código de barras y clave (si tiene) - MODIFICADO PARA ELIMINAR ASTERISCOS
+                // 2. Código de barras y clave (si tiene) - SIN ASTERISCOS
                 if (hasKey) {
                     try {
                         // Crear código de barras como imagen (sin asteriscos)
@@ -1687,7 +1637,7 @@
                         );
                         currentY += sectionHeights.barcode;
                         
-                        // 4. Clave (debajo del código de barras)
+                        // 3. Clave (debajo del código de barras)
                         const claveY = 1.3 + currentY + sectionHeights.clave / 2;
                         doc.setFontSize(12);
                         doc.setFont(undefined, 'bold');
@@ -1710,10 +1660,9 @@
                     }
                 }
                 
-                // 5. Piezas (al lado del código de barras, si tiene)
+                // 4. Piezas (al lado del código de barras, si tiene)
                 if (hasPieces) {
-                    const piecesY = labelY + sectionHeights.blanco / 2 + sectionHeights.asterisco + 
-                                  nombreHeight + sectionHeights.barcode / 2;
+                    const piecesY = labelY + sectionHeights.blanco / 2 + nombreHeight + sectionHeights.barcode / 2;
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
                     const piecesText = `${label.piezaActual} de ${label.totalPiezas}`;
