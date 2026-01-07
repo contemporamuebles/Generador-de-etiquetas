@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -293,6 +294,17 @@
             text-align: center;
             font-weight: bold;
             color: #fcc919;
+        }
+
+        /* Estilos para generar código de barras */
+        .barcode-canvas-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+
+        .barcode-canvas {
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -680,6 +692,11 @@
                 <button id="generateFurnitureWithoutKeySingle" class="btn-warning">Generar Etiquetas</button>
             </div>
         </div>
+    </div>
+
+    <!-- Canvas oculto para generar códigos de barras -->
+    <div class="barcode-canvas-container">
+        <canvas id="barcodeCanvas" class="barcode-canvas"></canvas>
     </div>
 
     <script>
@@ -1174,7 +1191,49 @@
             generateStonePDF(labels);
         }
         
-        // Función simplificada para crear código de barras como texto (más confiable)
+        // Función para crear código de barras como imagen (sin rotación)
+        function createBarcodeImage(text) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // Crear canvas temporal
+                    const canvas = document.getElementById('barcodeCanvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Limpiar canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Generar código de barras
+                    JsBarcode(canvas, text, {
+                        format: "CODE128",
+                        lineColor: "#000000",
+                        width: 1,
+                        height: 30,
+                        displayValue: false,
+                        margin: 0
+                    });
+                    
+                    // Convertir a data URL
+                    const dataUrl = canvas.toDataURL('image/png');
+                    
+                    // Crear objeto Image
+                    const img = new Image();
+                    img.onload = function() {
+                        resolve({
+                            img: img,
+                            dataUrl: dataUrl,
+                            width: canvas.width,
+                            height: canvas.height
+                        });
+                    };
+                    img.onerror = reject;
+                    img.src = dataUrl;
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+        
+        // Función para generar etiquetas de piedra (sin rotación)
         function generateStonePDF(labels) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
@@ -1206,158 +1265,106 @@
             
             doc.setFont("helvetica", "normal");
             
-            // Procesar primera página
-            for (let row = 0; row < labelsPerColumn; row++) {
-                for (let col = 0; col < labelsPerRow; col++) {
-                    if (labelIndex >= labels.length) break;
+            // Procesar en lotes para evitar problemas de memoria
+            const processBatch = async (startIndex, endIndex) => {
+                for (let i = startIndex; i < endIndex && i < labels.length; i++) {
+                    const label = labels[i];
                     
-                    const label = labels[labelIndex];
+                    // Calcular posición
+                    const row = Math.floor((i - startIndex) / labelsPerRow);
+                    const col = (i - startIndex) % labelsPerRow;
                     
-                    // Guardar el estado actual del PDF
-                    doc.saveGraphicsState();
+                    const x = marginLeft + col * labelWidth;
+                    const y = marginTop + row * labelHeight;
                     
-                    // Trasladar el origen al centro de la etiqueta
-                    const centerX = currentX + labelWidth / 2;
-                    const centerY = currentY + labelHeight / 2;
-                    
-                    // Rotar 90 grados para texto vertical
-                    doc.rotate(-90, centerX, centerY);
-                    
-                    // Ahora el eje X es vertical y el eje Y es horizontal
-                    // Dividir el espacio verticalmente (pero ahora es horizontal por la rotación)
-                    const sectionWidth = labelHeight / 4; // Dividimos en 4 secciones
-                    
-                    // 1. Código de barras (como texto para impresoras con fuente de código de barras)
-                    const barcodeX = centerX - labelHeight/2 + sectionWidth * 0.5;
-                    const barcodeY = centerY - labelWidth/2 + 0.2;
-                    doc.setFontSize(5);
-                    doc.setFont(undefined, 'normal');
-                    doc.text(`*${label.clave}*`, barcodeX, barcodeY);
-                    
-                    // 2. Clave
-                    const claveX = centerX - labelHeight/2 + sectionWidth * 1.5;
-                    const claveY = centerY - labelWidth/2 + 0.2;
-                    doc.setFontSize(7);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(label.clave, claveX, claveY);
-                    
-                    // 3. Nombre (puede ocupar más espacio)
-                    const nombreX = centerX - labelHeight/2 + sectionWidth * 2.5;
-                    const nombreY = centerY - labelWidth/2 + 0.2;
-                    doc.setFontSize(6);
-                    
-                    // Calcular tamaño de fuente para que quepa
-                    let fontSize = 6;
-                    let textWidth;
-                    
-                    do {
-                        doc.setFontSize(fontSize);
-                        textWidth = doc.getTextWidth(label.nombre);
-                        if (textWidth > labelHeight - 0.5 && fontSize > 4) {
-                            fontSize -= 0.5;
-                        } else {
-                            break;
-                        }
-                    } while (textWidth > labelHeight - 0.5 && fontSize > 4);
-                    
-                    doc.setFontSize(fontSize);
-                    doc.text(label.nombre, nombreX, nombreY, { maxWidth: labelHeight - 0.5 });
-                    
-                    // Restaurar el estado
-                    doc.restoreGraphicsState();
-                    
-                    // Dibujar bordes punteados
-                    doc.setDrawColor(200, 200, 200);
-                    doc.setLineWidth(0.01);
-                    const dashPattern = [0.05, 0.05];
-                    doc.setLineDashPattern(dashPattern, 0);
-                    doc.rect(currentX, currentY, labelWidth, labelHeight, 'S');
-                    doc.setLineDashPattern([], 0);
-                    
-                    currentX += labelWidth;
-                    labelIndex++;
-                }
-                
-                currentX = marginLeft;
-                currentY += labelHeight;
-                
-                if (labelIndex >= labels.length) break;
-            }
-            
-            // Si hay más etiquetas, agregar nuevas páginas
-            while (labelIndex < labels.length) {
-                doc.addPage();
-                currentX = marginLeft;
-                currentY = marginTop;
-                
-                for (let row = 0; row < labelsPerColumn; row++) {
-                    for (let col = 0; col < labelsPerRow; col++) {
-                        if (labelIndex >= labels.length) break;
+                    try {
+                        // Crear código de barras como imagen
+                        const barcodeData = await createBarcodeImage(`*${label.clave}*`);
                         
-                        const label = labels[labelIndex];
+                        // Calcular tamaño para el código de barras (ajustado para etiqueta vertical)
+                        const barcodeImgWidth = 0.8; // cm
+                        const barcodeImgHeight = 4.0; // cm
                         
-                        doc.saveGraphicsState();
+                        // Posicionar código de barras (centrado horizontalmente)
+                        const barcodeX = x + (labelWidth - barcodeImgWidth) / 2;
+                        const barcodeY = y + 0.3;
                         
-                        const centerX = currentX + labelWidth / 2;
-                        const centerY = currentY + labelHeight / 2;
+                        // Agregar código de barras (sin rotación)
+                        doc.addImage(
+                            barcodeData.dataUrl, 
+                            'PNG', 
+                            barcodeX, 
+                            barcodeY, 
+                            barcodeImgWidth, 
+                            barcodeImgHeight
+                        );
                         
-                        doc.rotate(-90, centerX, centerY);
-                        
-                        const sectionWidth = labelHeight / 4;
-                        
-                        const barcodeX = centerX - labelHeight/2 + sectionWidth * 0.5;
-                        const barcodeY = centerY - labelWidth/2 + 0.2;
-                        doc.setFontSize(5);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`*${label.clave}*`, barcodeX, barcodeY);
-                        
-                        const claveX = centerX - labelHeight/2 + sectionWidth * 1.5;
-                        const claveY = centerY - labelWidth/2 + 0.2;
-                        doc.setFontSize(7);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(label.clave, claveX, claveY);
-                        
-                        const nombreX = centerX - labelHeight/2 + sectionWidth * 2.5;
-                        const nombreY = centerY - labelWidth/2 + 0.2;
+                        // Agregar clave (debajo del código de barras)
+                        const claveY = barcodeY + barcodeImgHeight + 0.2;
                         doc.setFontSize(6);
+                        doc.setFont(undefined, 'bold');
                         
-                        let fontSize = 6;
-                        let textWidth;
+                        // Dividir clave en caracteres individuales (texto vertical)
+                        const claveChars = label.clave.split('');
+                        const charSpacing = 0.35; // cm entre caracteres
                         
-                        do {
-                            doc.setFontSize(fontSize);
-                            textWidth = doc.getTextWidth(label.nombre);
-                            if (textWidth > labelHeight - 0.5 && fontSize > 4) {
-                                fontSize -= 0.5;
-                            } else {
-                                break;
-                            }
-                        } while (textWidth > labelHeight - 0.5 && fontSize > 4);
+                        for (let j = 0; j < claveChars.length; j++) {
+                            const charX = x + labelWidth / 2;
+                            const charY = claveY + (j * charSpacing);
+                            doc.text(claveChars[j], charX, charY, { align: 'center' });
+                        }
                         
-                        doc.setFontSize(fontSize);
-                        doc.text(label.nombre, nombreX, nombreY, { maxWidth: labelHeight - 0.5 });
+                        // Agregar nombre (debajo de la clave)
+                        const nombreStartY = claveY + (claveChars.length * charSpacing) + 0.3;
+                        doc.setFontSize(5);
                         
-                        doc.restoreGraphicsState();
+                        // Dividir nombre en caracteres individuales
+                        const nombreChars = label.nombre.split('');
+                        const nombreCharSpacing = 0.25; // cm entre caracteres
                         
+                        for (let j = 0; j < nombreChars.length; j++) {
+                            const charX = x + labelWidth / 2;
+                            const charY = nombreStartY + (j * nombreCharSpacing);
+                            doc.text(nombreChars[j], charX, charY, { align: 'center' });
+                        }
+                        
+                        // Dibujar bordes punteados
                         doc.setDrawColor(200, 200, 200);
                         doc.setLineWidth(0.01);
                         const dashPattern = [0.05, 0.05];
                         doc.setLineDashPattern(dashPattern, 0);
-                        doc.rect(currentX, currentY, labelWidth, labelHeight, 'S');
+                        doc.rect(x, y, labelWidth, labelHeight, 'S');
                         doc.setLineDashPattern([], 0);
                         
-                        currentX += labelWidth;
-                        labelIndex++;
+                    } catch (error) {
+                        console.error('Error generando código de barras:', error);
+                        // Continuar con la siguiente etiqueta
+                    }
+                }
+            };
+            
+            // Procesar todas las etiquetas
+            const processAllLabels = async () => {
+                const batchSize = labelsPerRow * labelsPerColumn;
+                
+                for (let pageStart = 0; pageStart < labels.length; pageStart += batchSize) {
+                    if (pageStart > 0) {
+                        doc.addPage();
+                        currentX = marginLeft;
+                        currentY = marginTop;
                     }
                     
-                    currentX = marginLeft;
-                    currentY += labelHeight;
-                    
-                    if (labelIndex >= labels.length) break;
+                    const pageEnd = Math.min(pageStart + batchSize, labels.length);
+                    await processBatch(pageStart, pageEnd);
                 }
-            }
+                
+                doc.save('etiquetas_placas_piedra.pdf');
+            };
             
-            doc.save('etiquetas_placas_piedra.pdf');
+            processAllLabels().catch(error => {
+                console.error('Error generando PDF:', error);
+                alert('Error generando el PDF. Por favor, intente nuevamente.');
+            });
         }
         
         // Función para generar etiquetas de muebles
@@ -1497,7 +1504,30 @@
             return labels;
         }
         
-        function generateFurniturePDF(labels, type, fontSize) {
+        // Función para dividir texto en líneas que quepan en el ancho disponible
+        function splitTextToFitWidth(doc, text, maxWidth, fontSize) {
+            doc.setFontSize(fontSize);
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const testLine = currentLine + ' ' + word;
+                const testWidth = doc.getTextWidth(testLine);
+                
+                if (testWidth > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+        
+        async function generateFurniturePDF(labels, type, fontSize) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
                 orientation: 'portrait',
@@ -1542,6 +1572,7 @@
             
             doc.setFont("helvetica", "normal");
             
+            // Procesar etiquetas
             while (labelIndex < labels.length) {
                 // Verificar si necesitamos nueva página (2 etiquetas por página)
                 if (labelIndex > 0 && labelIndex % 2 === 0) {
@@ -1576,44 +1607,91 @@
                 // 2. Nombre (con el tamaño de fuente configurado)
                 const nombreY = currentY + nombreHeight / 2;
                 
-                // Calcular tamaño de fuente ajustado para que quepa
+                // Calcular tamaño de fuente ajustado para que quepa en el ancho
                 let actualFontSize = fontSize;
                 doc.setFont(undefined, 'bold');
                 
-                // Reducir tamaño si es necesario para que quepa en el ancho
-                let textWidth;
-                do {
-                    doc.setFontSize(actualFontSize);
-                    textWidth = doc.getTextWidth(label.nombre);
-                    if (textWidth > labelWidth * 0.9 && actualFontSize > 8) {
-                        actualFontSize -= 1;
-                    } else {
-                        break;
-                    }
-                } while (textWidth > labelWidth * 0.9 && actualFontSize > 8);
+                // Dividir texto en líneas si es necesario
+                const maxWidth = labelWidth * 0.9; // 90% del ancho disponible
+                let lines = [];
+                let lineHeight = 0;
                 
+                // Intentar con el tamaño de fuente configurado
                 doc.setFontSize(actualFontSize);
-                doc.text(label.nombre, marginLeft + labelWidth / 2, nombreY, { 
-                    align: 'center', 
-                    maxWidth: labelWidth * 0.9 
-                });
+                lines = splitTextToFitWidth(doc, label.nombre, maxWidth, actualFontSize);
+                
+                // Si hay más de una línea, ajustar el tamaño de fuente
+                if (lines.length > 1) {
+                    // Reducir tamaño de fuente para intentar que quepa en menos líneas
+                    let reducedFontSize = actualFontSize;
+                    while (reducedFontSize > 8 && lines.length > 1) {
+                        reducedFontSize -= 1;
+                        doc.setFontSize(reducedFontSize);
+                        lines = splitTextToFitWidth(doc, label.nombre, maxWidth, reducedFontSize);
+                    }
+                    actualFontSize = reducedFontSize;
+                }
+                
+                // Calcular altura total del texto
+                lineHeight = actualFontSize * 0.035; // Aproximadamente en cm
+                const totalTextHeight = lines.length * lineHeight;
+                
+                // Ajustar posición Y para centrar el texto
+                const textStartY = nombreY - (totalTextHeight / 2) + (lineHeight / 2);
+                
+                // Dibujar cada línea
+                doc.setFontSize(actualFontSize);
+                for (let i = 0; i < lines.length; i++) {
+                    doc.text(lines[i], marginLeft + labelWidth / 2, textStartY + (i * lineHeight), { 
+                        align: 'center' 
+                    });
+                }
+                
                 currentY += nombreHeight;
                 
                 // 3. Código de barras y clave (si tiene)
                 if (hasKey) {
-                    const barcodeY = currentY + sectionHeights.barcode / 2;
-                    doc.setFontSize(8);
-                    doc.setFont(undefined, 'normal');
-                    // Texto para código de barras (las impresoras con fuente de código de barras lo interpretarán)
-                    doc.text(`*${label.clave}*`, marginLeft + labelWidth / 2, barcodeY, { align: 'center' });
-                    currentY += sectionHeights.barcode;
-                    
-                    // 4. Clave (debajo del código de barras)
-                    const claveY = currentY + sectionHeights.clave / 2;
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(label.clave, marginLeft + labelWidth / 2, claveY, { align: 'center' });
-                    currentY += sectionHeights.clave;
+                    try {
+                        // Crear código de barras como imagen
+                        const barcodeData = await createBarcodeImage(`*${label.clave}*`);
+                        
+                        const barcodeY = currentY + sectionHeights.barcode / 2;
+                        const barcodeWidth = 5; // cm
+                        const barcodeHeight = 1; // cm
+                        
+                        // Posicionar código de barras (centrado)
+                        const barcodeX = marginLeft + (labelWidth - barcodeWidth) / 2;
+                        doc.addImage(
+                            barcodeData.dataUrl, 
+                            'PNG', 
+                            barcodeX, 
+                            barcodeY, 
+                            barcodeWidth, 
+                            barcodeHeight
+                        );
+                        currentY += sectionHeights.barcode;
+                        
+                        // 4. Clave (debajo del código de barras)
+                        const claveY = 1.3 + currentY + sectionHeights.clave / 2;
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(label.clave, marginLeft + labelWidth / 2, claveY, { align: 'center' });
+                        currentY += sectionHeights.clave;
+                    } catch (error) {
+                        console.error('Error generando código de barras:', error);
+                        // Si falla, usar texto como fallback
+                        const barcodeY = currentY + sectionHeights.barcode / 2;
+                        doc.setFontSize(8);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`*${label.clave}*`, marginLeft + labelWidth / 2, barcodeY, { align: 'center' });
+                        currentY += sectionHeights.barcode;
+                        
+                        const claveY = currentY + sectionHeights.clave / 2;
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(label.clave, marginLeft + labelWidth / 2, claveY, { align: 'center' });
+                        currentY += sectionHeights.clave;
+                    }
                 }
                 
                 // 5. Piezas (al lado del código de barras, si tiene)
