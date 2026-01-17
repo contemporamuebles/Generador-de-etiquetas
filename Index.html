@@ -1698,14 +1698,18 @@
                     const piecesY = labelY + sectionHeights.blanco / 2 + nombreHeight + sectionHeights.barcode / 2;
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    const piecesText = `(${label.piezaActual} de ${label.totalPiezas})`;
+                    if (label.totalPiezas>1){
+                        const piecesText = `(${label.piezaActual} de ${label.totalPiezas})`;
+                    }else{
+                        const piecesText = ` `;
+                    }
                     doc.text(piecesText, marginLeft + labelWidth - 1.0, piecesY, { align: 'right' });
                 }
                 
                 // Dibujar línea punteada solo en el medio de la página (entre etiquetas)
                 if (labelIndex % 2 === 0 && labelIndex + 1 < labels.length) {
                     const lineY = labelY + labelHeight;
-                    doc.setDrawColor(200, 200, 200);
+                    doc.setDrawColor(100, 100, 100);
                     doc.setLineWidth(0.01);
                     const dashPattern = [0.2, 0.2];
                     doc.setLineDashPattern(dashPattern, 0);
