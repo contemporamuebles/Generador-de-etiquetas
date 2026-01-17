@@ -1698,11 +1698,12 @@
                     const piecesY = labelY + sectionHeights.blanco / 2 + nombreHeight + sectionHeights.barcode / 2;
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    if (label.totalPiezas>1){
-                        const piecesText = `(${label.piezaActual} de ${label.totalPiezas})`;
-                    }else{
-                        const piecesText = ` `;
-                    }
+                
+                    // Definimos la constante usando una condición en línea
+                    const piecesText = (label.totalPiezas > 1) 
+                        ? `(${label.piezaActual} de ${label.totalPiezas})` 
+                        : ` `;
+                
                     doc.text(piecesText, marginLeft + labelWidth - 1.0, piecesY, { align: 'right' });
                 }
                 
