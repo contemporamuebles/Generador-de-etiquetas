@@ -1708,7 +1708,7 @@
                 }
                 
                 // Dibujar línea punteada solo en el medio de la página (entre etiquetas)
-                if (labelIndex % 2 === 0 && labelIndex + 1 < labels.length) {
+                if (labelIndex % 2 === 0) {
                     const lineY = labelY + labelHeight;
                     doc.setDrawColor(100, 100, 100);
                     doc.setLineWidth(0.01);
