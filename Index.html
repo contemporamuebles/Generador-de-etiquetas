@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -357,66 +357,7 @@
             </div>
         </div>
         
-        <!-- Pantalla para placas de piedra -->
-        <div id="stoneScreen" class="hidden">
-            <div class="step-indicator">
-                <div class="step active">Placas de Piedra</div>
-            </div>
-            
-            <div class="top-controls">
-                <button id="backFromStone" class="btn-secondary">← Volver</button>
-                <button id="homeFromStone" class="btn-secondary">🏠 Inicio</button>
-            </div>
-            
-            <h2>Etiquetas para Placas de Piedra</h2>
-            
-            <div class="instructions">
-                <h3>📏 Especificaciones:</h3>
-                <p>- Se generará archivo Excel con las etiquetas listas para imprimirse</p>
-                <p>- Es necesario tener instalada la tipografía IDAutomationHC39M Free Version</p>
-                <p>- La tipografía anterior puede descargarse en el siguiente link: </p>
-                <a href="https://drive.google.com/file/d/12J78IkOtgKD5DSkM-WHMhcCYBgvz5nRP/view?usp=sharing" target="_blank" rel="noopener noreferrer">
-                    Descargar tipografía
-                </a>
-                <p>- También es importante contar con la versión de Excel del 2013 o superior</p>
-                <p>- Se puede exportar un archivo de Excel con los datos para generar las etiquetas</p>
-                <p>- El archivo de Excel de entrada debe respetar las columnas de Clave, Nombre y Cantidad</p>
-            </div>
-            
-            <div class="file-input-container">
-                <label for="stoneFileInput" class="file-input-label">
-                    📁 Importar datos desde Excel
-                </label>
-                <input type="file" id="stoneFileInput" accept=".xlsx,.xls,.csv">
-            </div>
-            
-            <div class="table-container">
-                <table id="stoneTable">
-                    <thead>
-                        <tr>
-                            <th>Clave de la Placa</th>
-                            <th>Nombre de la Placa</th>
-                            <th>Cantidad de Etiquetas</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stoneTableBody">
-                        <tr>
-                            <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
-                            <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
-                            <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                            <td><button class="btn-danger remove-row">Eliminar</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="controls">
-                <button id="addStoneRow" class="btn-success">+ Agregar Fila</button>
-                <button id="generateStoneLabels" class="btn-primary">Generar Etiquetas (Excel)</button>
-            </div>
-        </div>
-        
+
         <!-- Pantalla para muebles - Selección con/sin clave -->
         <div id="furnitureKeyScreen" class="hidden">
             <div class="step-indicator">
@@ -722,14 +663,10 @@
         // Inicialización de eventos
         document.addEventListener('DOMContentLoaded', function() {
             // Botones principales
-            document.getElementById('stoneBtn').addEventListener('click', showStoneScreen);
+            document.getElementById('stoneBtn').addEventListener('click', function() {
+                window.location.href = 'https://etiquetas-piedra-pdf.vercel.app/';
+            });
             document.getElementById('furnitureBtn').addEventListener('click', showFurnitureKeyScreen);
-            
-            // Botones de navegación para piedra
-            document.getElementById('backFromStone').addEventListener('click', showMainScreen);
-            document.getElementById('homeFromStone').addEventListener('click', showMainScreen);
-            document.getElementById('addStoneRow').addEventListener('click', addStoneRow);
-            document.getElementById('generateStoneLabels').addEventListener('click', generateStoneLabels);
             
             // Botones para muebles - selección de clave
             document.getElementById('withKeyBtn').addEventListener('click', () => showFurniturePiecesScreen('withKey'));
@@ -781,7 +718,6 @@
             document.addEventListener('paste', handlePaste);
             
             // Eventos para importar archivos Excel
-            document.getElementById('stoneFileInput').addEventListener('change', handleStoneFileImport);
             document.getElementById('furnitureFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withKeyMultiple'));
             document.getElementById('furnitureSingleFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withKeySingle'));
             document.getElementById('furnitureWithoutKeyFileInput').addEventListener('change', (e) => handleFurnitureFileImport(e, 'withoutKeyMultiple'));
@@ -815,11 +751,7 @@
             document.getElementById('mainScreen').classList.remove('hidden');
         }
         
-        function showStoneScreen() {
-            hideAllScreens();
-            document.getElementById('stoneScreen').classList.remove('hidden');
-        }
-        
+
         function showFurnitureKeyScreen() {
             hideAllScreens();
             document.getElementById('furnitureKeyScreen').classList.remove('hidden');
@@ -863,7 +795,7 @@
         
         function hideAllScreens() {
             const screens = [
-                'mainScreen', 'stoneScreen', 'furnitureKeyScreen', 'furniturePiecesScreen',
+                'mainScreen', 'furnitureKeyScreen', 'furniturePiecesScreen',
                 'furnitureWithKeyMultipleScreen', 'furnitureWithKeySingleScreen',
                 'furnitureWithoutKeyMultipleScreen', 'furnitureWithoutKeySingleScreen'
             ];
@@ -874,18 +806,7 @@
         }
         
         // Funciones para manejar tablas
-        function addStoneRow() {
-            const tbody = document.getElementById('stoneTableBody');
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = `
-                <td><input type="text" class="stone-clave" placeholder="Ej: PLACA001"></td>
-                <td><input type="text" class="stone-nombre" placeholder="Ej: Mármol Blanco"></td>
-                <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                <td><button class="btn-danger remove-row">Eliminar</button></td>
-            `;
-            tbody.appendChild(newRow);
-        }
-        
+
         function addFurnitureRow(type) {
             let tbodyId = '';
             let html = '';
@@ -946,9 +867,7 @@
                 const pastedData = clipboardData.getData('Text');
                 
                 let screen = '';
-                if (!document.getElementById('stoneScreen').classList.contains('hidden')) {
-                    screen = 'stone';
-                } else if (!document.getElementById('furnitureWithKeyMultipleScreen').classList.contains('hidden')) {
+                if (!document.getElementById('furnitureWithKeyMultipleScreen').classList.contains('hidden')) {
                     screen = 'furnitureWithKeyMultiple';
                 } else if (!document.getElementById('furnitureWithKeySingleScreen').classList.contains('hidden')) {
                     screen = 'furnitureWithKeySingle';
@@ -972,16 +891,6 @@
             let columns;
             
             switch(screen) {
-                case 'stone':
-                    tbody = document.getElementById('stoneTableBody');
-                    rowTemplate = `<tr>
-                        <td><input type="text" class="stone-clave"></td>
-                        <td><input type="text" class="stone-nombre"></td>
-                        <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                        <td><button class="btn-danger remove-row">Eliminar</button></td>
-                    </tr>`;
-                    columns = 3;
-                    break;
                 case 'furnitureWithKeyMultiple':
                     tbody = document.getElementById('furnitureWithKeyMultipleBody');
                     rowTemplate = `<tr>
@@ -1060,10 +969,6 @@
         }
         
         // Función para importar archivos Excel
-        function handleStoneFileImport(event) {
-            handleFileImport(event, 'stone');
-        }
-        
         function handleFurnitureFileImport(event, type) {
             handleFileImport(event, type);
         }
@@ -1092,16 +997,6 @@
             let columnCount;
             
             switch(type) {
-                case 'stone':
-                    tbody = document.getElementById('stoneTableBody');
-                    rowTemplate = `<tr>
-                        <td><input type="text" class="stone-clave"></td>
-                        <td><input type="text" class="stone-nombre"></td>
-                        <td><input type="number" class="stone-cantidad" min="1" value="1"></td>
-                        <td><button class="btn-danger remove-row">Eliminar</button></td>
-                    </tr>`;
-                    columnCount = 3;
-                    break;
                 case 'withKeyMultiple':
                     tbody = document.getElementById('furnitureWithKeyMultipleBody');
                     rowTemplate = `<tr>
@@ -1175,175 +1070,7 @@
             event.target.value = '';
         }
         
-        // Función para generar etiquetas de piedra (Excel)
-        function generateStoneLabels() {
-            const rows = document.querySelectorAll('#stoneTableBody tr');
-            const labels = [];
-            
-            rows.forEach(row => {
-                const clave = row.querySelector('.stone-clave').value.trim();
-                const nombre = row.querySelector('.stone-nombre').value.trim();
-                const cantidad = parseInt(row.querySelector('.stone-cantidad').value) || 0;
-                
-                if (clave && nombre && cantidad > 0) {
-                    for (let i = 0; i < cantidad; i++) {
-                        labels.push({ clave, nombre });
-                    }
-                }
-            });
-            
-            if (labels.length === 0) {
-                alert('Por favor, ingrese al menos una etiqueta válida.');
-                return;
-            }
-            
-            generateStoneExcel(labels);
-        }
-        
-        // Función para generar Excel para etiquetas de piedra CON ESTILOS COMPLETOS
-        async function generateStoneExcel(labels) {
-            try {
-                // Crear un nuevo libro de trabajo con ExcelJS
-                const workbook = new ExcelJS.Workbook();
-                workbook.creator = 'Sistema de Generación de Etiquetas';
-                workbook.created = new Date();
-                
-                // Agregar una hoja
-                const worksheet = workbook.addWorksheet('Etiquetas para placas');
-                
-                // ========== CONFIGURACIÓN DE MÁRGENES Y DISEÑO DE PÁGINA ==========
-                worksheet.pageSetup = {
-                    paperSize: 1,               // Carta
-                    orientation: 'portrait',    // portrait | landscape
-                    margins: {
-                        top: 1.27 / 2.54,
-                        bottom: 1.27 / 2.54,
-                        left: 0.64 / 2.54,
-                        right: 0.64 / 2.54,
-                        header: 0.76 / 2.54,
-                        footer: 0.76 / 2.54
-                    }
-                };
 
-                
-                // ========== CONFIGURAR ANCHO DE COLUMNAS ==========
-                // 14 columnas (A a N) con ancho de 1.38 cm
-                // En ExcelJS, el ancho se mide en caracteres. 1.38 cm ≈ 15 caracteres
-                for (let i = 1; i <= 14; i++) {
-                    worksheet.getColumn(i).width = 6.89; // 1.38 cm aproximadamente
-                }
-                
-                // ========== PROCESAR ETIQUETAS ==========
-                let currentRow = 1;
-                let currentCol = 1;
-                
-                // Recorrer todas las etiquetas
-                for (const label of labels) {
-                    // ========== FILA IMPAR (CLAVE - CÓDIGO DE BARRAS) ==========
-                    const oddRow = worksheet.getRow(currentRow);
-                    
-                    // Configurar alto de fila: 3.75 cm ≈ 106 puntos
-                    oddRow.height = 133.14;
-                    
-                    // Configurar celda para clave
-                    const claveCell = oddRow.getCell(currentCol);
-                    claveCell.value = "*" + label.clave + "*"; // Formato para código de barras
-                    
-                    // Estilo para fila impar: IDAutomationHC39M Free Version, tamaño 8
-                    claveCell.font = {
-                        name: 'IDAutomationHC39M Free Version',
-                        family: 2, // 1=Roman, 2=Swiss, 3=Modern, 4=Script, 5=Decorative
-                        size: 8,
-                        bold: false
-                    };
-                    
-                    // Alineación: texto girado hacia arriba (90 grados)
-                    claveCell.alignment = {
-                        vertical: 'middle',
-                        horizontal: 'left',
-                        textRotation: 90, // Girar texto hacia arriba
-                        wrapText: true
-                    };
-                    
-                    // Bordes punteados
-                    claveCell.border = {
-                        top: { style: 'dashed' },
-                        left: { style: 'dashed' },
-                        bottom: { style: 'null' },
-                        right: { style: 'dashed' }
-                    };
-                    
-                    // ========== FILA PAR (NOMBRE) ==========
-                    const evenRow = worksheet.getRow(currentRow + 1);
-                    
-                    // Configurar alto de fila: 3.75 cm ≈ 106 puntos
-                    evenRow.height = 133.14;
-                    
-                    // Configurar celda para nombre
-                    const nombreCell = evenRow.getCell(currentCol);
-                    nombreCell.value = label.nombre;
-                    
-                    // Estilo para fila par: Calibri, tamaño 10, no negritas
-                    nombreCell.font = {
-                        name: 'Calibri',
-                        family: 2,
-                        size: 8,
-                        bold: false
-                    };
-                    
-                    // Alineación: texto girado hacia arriba (90 grados)
-                    nombreCell.alignment = {
-                        vertical: 'middle',
-                        horizontal: 'center',
-                        textRotation: 90, // Girar texto hacia arriba
-                        wrapText: true
-                    };
-                    
-                    // Bordes punteados
-                    nombreCell.border = {
-                        top: { style: 'null' },
-                        left: { style: 'dashed' },
-                        bottom: { style: 'dashed' },
-                        right: { style: 'dashed' }
-                    };
-                    
-                    // ========== AVANZAR A LA SIGUIENTE COLUMNA ==========
-                    currentCol++;
-                    
-                    // Si llegamos a la columna N (14), pasar a la siguiente fila doble
-                    if (currentCol > 14) {
-                        currentCol = 1;
-                        currentRow += 2; // Avanzar 2 filas (clave + nombre)
-                    }
-                }
-                
-                
-                // ========== GENERAR Y DESCARGAR ARCHIVO ==========
-                const buffer = await workbook.xlsx.writeBuffer();
-                const blob = new Blob([buffer], { 
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-                });
-                
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'etiquetas_placas_piedra.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                
-                // Limpiar
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-                
-                
-            } catch (error) {
-                console.error('Error al generar Excel:', error);
-                alert('Error al generar el archivo Excel. Verifique la consola para más detalles.');
-            }
-        }
-        
         // Función para generar etiquetas de muebles
         function generateFurnitureLabels(type) {
             let labels = [];
